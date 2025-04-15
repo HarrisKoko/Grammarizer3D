@@ -7,7 +7,17 @@
 #include <maya/MIntArray.h>
 #include <maya/MDagPath.h>
 #include <iostream>
-#include "graph.h"
+
+Graph LoadMeshCmd::s_loadedGraph  = Graph();
+bool LoadMeshCmd::s_hasLoadedGraph = false;
+
+Graph& LoadMeshCmd::getLoadedGraph() {
+    return s_loadedGraph;
+}
+
+bool LoadMeshCmd::hasLoadedGraph() {
+    return s_hasLoadedGraph;
+}
 
 MStatus LoadMeshCmd::doIt(const MArgList& args) {
     // Get the selected mesh in Maya
@@ -86,7 +96,9 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
         }
 
         // Construct the graph
-        Graph graph(vertexPositions, faceData);
+        s_loadedGraph = Graph(vertexPositions, faceData);
+        s_hasLoadedGraph = true;
+
 
     }
 

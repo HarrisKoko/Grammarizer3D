@@ -2,7 +2,9 @@ global string $iterSlide;
 global string $outputCountSlide;
 global string $minEdgeLengthSlide;
 global string $maxEdgeLengthSlide;
-global string $txtField;
+global string $statusLabel1;
+global string $statusLabel2;
+global string $statusLabel3;
 
 global proc string readTxtFile(string $filePath) {
     int $fid = `fopen $filePath "r"`;
@@ -11,38 +13,17 @@ global proc string readTxtFile(string $filePath) {
     return $fileContents;
 }
 
-global proc openTxtFileBrowser(string $txtField) {
+global proc openTxtFileBrowser(string $statusLabel) {
     string $filePathArray[] = `fileDialog2 -fileMode 1 -caption "Select a Text File" -fileFilter "Text Files (*.txt)"`;
     if (size($filePathArray) > 0) {
         string $filePath = $filePathArray[0];
         string $fileContents = readTxtFile($filePath);
         if (size($fileContents) > 0) {
-            textField -e -text "Grammar successfully loaded." $txtField;
+            text -e -label "Grammar successfully loaded." -backgroundColor 0 0.5 0 $statusLabel;
         } else {
-            textField -e -text "Failed to load grammar." $txtField;
+            text -e -label "Failed to load grammar." -backgroundColor 0.5 0 0 $statusLabel;
         }
     }
-}
-
-global proc onGeneratePressed() {
-    global string $iterSlide;
-    global string $outputCountSlide;
-    global string $minEdgeLengthSlide;
-    global string $maxEdgeLengthSlide;
-    global string $txtField;
-
-    int $iters = `intSliderGrp -q -value $iterSlide`;
-    int $outputCount = `intSliderGrp -q -value $outputCountSlide`;
-    float $minEdgeLength = `floatSliderGrp -q -value $minEdgeLengthSlide`;
-    float $maxEdgeLength = `floatSliderGrp -q -value $maxEdgeLengthSlide`;
-
-    print("Params selected:\n");
-    print("Iterations: " + $iters + "\n");
-    print("Output Count: " + $outputCount + "\n");
-    print("Min Edge Length: " + $minEdgeLength + "\n");
-    print("Max Edge Length: " + $maxEdgeLength + "\n");
-
-    textField -e -text "Ready to generate!" $txtField;
 }
 
 global proc onCancelPressed() {
@@ -53,29 +34,37 @@ global proc onCancelPressed() {
 
 global proc loadObject() {
     print("Calling LoadMeshCmd...\n");
-
     string $result;
     int $status = catch($result = `LoadMeshCmd`);
 
+    global string $statusLabel1;
     if ($status != 0) {
         print("LoadMeshCmd failed.\n");
-        global string $txtField;
-        textField -e -text "Failed to load object." $txtField;
+        text -e -label "Failed to load object." -backgroundColor 0.5 0 0 $statusLabel1;
     } else {
         print("LoadMeshCmd result: " + $result + "\n");
-        global string $txtField;
-        textField -e -text "Object loaded successfully." $txtField;
+        text -e -label "Object loaded successfully." -backgroundColor 0 0.5 0 $statusLabel1;
     }
 }
 
-
-
 global proc exportGrammar() {
-    
+    // Placeholder
+    print("ExportGrammar command here.\n");
 }
 
 global proc generateGrammar() {
-    
+    print("Calling GenerateGrammarCmd...\n");
+    string $result;
+    int $status = catch($result = `GenerateGrammarCmd`);
+
+    global string $statusLabel2;
+    if ($status != 0) {
+        print("GenerateGrammarCmd failed.\n");
+        text -e -label "Failed to generate grammar." -backgroundColor 0.5 0 0 $statusLabel2;
+    } else {
+        print("GenerateGrammarCmd result: " + $result + "\n");
+        text -e -label "Grammar generated successfully." -backgroundColor 0 0.5 0 $statusLabel2;
+    }
 }
 
 global proc showMyWindow() {
@@ -84,42 +73,67 @@ global proc showMyWindow() {
     }
 
     window -title "Grammarizer Tool" myWindow;
+    scrollLayout;
     columnLayout -adjustableColumn true;
 
-    button -label "Select Object" -command "loadObject()";
-    global string $txtField;
-    $txtField = `textField -editable false -width 300 -height 50`;
+    // Section 1: Load from Scene
+    frameLayout -label "Option 1: Use Object from Scene" -collapsable true;
+    columnLayout -adjustableColumn true;
+    button -label "Select Object" -command "loadObject()" -ann "Select an object in the scene to build a grammar from.";
+    global string $statusLabel1;
+    $statusLabel1 = `text -label "Select an object to generate a grammar"
+        -backgroundColor 0.5 0.5 0.5
+        -height 25 -align "center"`;
 
-    button -label "Generate Grammar" -command "generateGrammar()";
-    button -label "Load Grammar" -command ("openTxtFileBrowser \"" + $txtField + "\"");
-    button -label "Export Grammar" -command "exportGrammar()";
+    button -label "Generate Grammar" -command "generateGrammar()" -ann "Generate a grammar from the selected object.";
+    global string $statusLabel2;
+    $statusLabel2 = `text -label "Grammar generation status"
+        -backgroundColor 0.5 0.5 0.5
+        -height 25 -align "center"`;
+
+    button -label "Export Grammar" -command "exportGrammar()" -ann "Export the grammar as a .txt file.";
+    setParent ..;
+    setParent ..;
+
+    // Section 2: Load from File
+    frameLayout -label "Option 2: Load Existing Grammar File" -collapsable true;
+    columnLayout -adjustableColumn true;
+    global string $statusLabel3;
+    $statusLabel3 = `text -label "Load a grammar"
+        -backgroundColor 0.5 0.5 0.5
+        -height 25 -align "center"`;
+    button -label "Load Grammar" -command ("openTxtFileBrowser \"" + $statusLabel3 + "\"") -ann "Load a grammar text file.";
+    setParent ..;
+    setParent ..;
+
+    // Generation Parameters
+    frameLayout -label "Generation Settings" -collapsable true;
+    columnLayout -adjustableColumn true;
 
     global string $iterSlide;
     $iterSlide = `intSliderGrp -label "Iterations" -field true
-        -minValue 1 -maxValue 10
-        -fieldMinValue -1 -fieldMaxValue 10
-        -value 1`;
+        -minValue 1 -maxValue 10 -value 1`;
 
     global string $outputCountSlide;
     $outputCountSlide = `intSliderGrp -label "Output Count" -field true
-        -minValue 1 -maxValue 100
-        -fieldMinValue -1 -fieldMaxValue 100
-        -value 10`;
+        -minValue 1 -maxValue 100 -value 10`;
 
     global string $minEdgeLengthSlide;
     $minEdgeLengthSlide = `floatSliderGrp -label "Min Edge Length" -field true
-        -minValue 0.1 -maxValue 10.0
-        -fieldMinValue 0.0 -fieldMaxValue 10.0
-        -value 1.0`;
+        -minValue 0.1 -maxValue 10.0 -value 1.0`;
 
     global string $maxEdgeLengthSlide;
     $maxEdgeLengthSlide = `floatSliderGrp -label "Max Edge Length" -field true
-        -minValue 1.0 -maxValue 50.0
-        -fieldMinValue 0.0 -fieldMaxValue 50.0
-        -value 10.0`;
+        -minValue 1.0 -maxValue 50.0 -value 10.0`;
 
-    button -label "Generate Models" -command "onGeneratePressed()";
-    button -label "Cancel" -command "onCancelPressed()";
+    setParent ..;
+    setParent ..;
+
+    // Generation Button + Cancel
+    rowLayout -numberOfColumns 2 -columnWidth2 150 150 -adjustableColumn 2;
+    button -label "Generate Models" -command "onGeneratePressed()" -ann "Generate new models using the current grammar.";
+    button -label "Cancel" -command "onCancelPressed()" -ann "Close the Grammarizer Tool window.";
+    setParent ..;
 
     showWindow myWindow;
 }

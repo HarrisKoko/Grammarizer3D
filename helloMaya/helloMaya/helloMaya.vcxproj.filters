@@ -33,6 +33,9 @@
     <ClInclude Include="LoadMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="generateGrammar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hello_maya.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LoadMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generateGrammar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
