@@ -1,5 +1,6 @@
 #include "hello_maya.h"
 #include <maya/MFnPlugin.h>
+#include "LoadMesh.h"
 // define EXPORT for exporting dll functions
 #define EXPORT _declspec(dllexport)
 // Maya Plugin creator function
@@ -38,16 +39,35 @@ EXPORT MStatus initializePlugin(MObject obj)
 	MStatus status;
 	MFnPlugin plugin(obj, "CIS660", "1.0", "Any");
 	status = plugin.registerCommand("helloMaya", helloMaya::creator);
-	if (!status)
+	status = plugin.registerCommand("LoadMeshCmd", LoadMeshCmd::creator);
+
+
+	if (!status) {
 		status.perror("registerCommand failed");
+		return status;
+	}
+
+	char buffer[2048];
+
+	// Format the string with the plugin path and the MEL file name
+	sprintf_s(buffer, sizeof(buffer), "source \"%s/pluginDialog.mel\";", plugin.loadPath().asChar());
+
+	// Execute the MEL command to source the script
+	MGlobal::executeCommand(buffer, true);
+
+
+
 	return status;
 }
+
 // Cleanup Plugin upon unloading
 EXPORT MStatus uninitializePlugin(MObject obj)
 {
 	MStatus status;
 	MFnPlugin plugin(obj);
 	status = plugin.deregisterCommand("helloMaya");
+	status = plugin.deregisterCommand("LoadMeshCmd");
+
 	if (!status)
 		status.perror("deregisterCommand failed");
 	return status;
