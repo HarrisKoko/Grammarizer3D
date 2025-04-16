@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="generateGrammar.h" />
+    <ClInclude Include="generateModels.h" />
     <ClInclude Include="graph.h" />
     <ClInclude Include="hello_maya.h" />
     <ClInclude Include="jsonreader.h" />
@@ -161,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="generateGrammar.cpp" />
+    <ClCompile Include="generateModels.cpp" />
     <ClCompile Include="graph.cpp" />
     <ClCompile Include="hello_maya.cpp" />
     <ClCompile Include="jsonreader.cpp" />

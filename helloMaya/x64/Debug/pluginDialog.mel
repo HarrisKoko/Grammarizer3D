@@ -67,6 +67,21 @@ global proc generateGrammar() {
     }
 }
 
+global proc generateModels(){
+    print("Calling GenerateModelsCmd...\n");
+    string $result;
+    int $status = catch($result = `GenerateModelsCmd`);
+
+    global string $statusLabel3;
+    if ($status != 0) {
+        print("GenerateModelsCmd failed.\n");
+        text -e -label "Failed to generate models." -backgroundColor 0.5 0 0 $statusLabel3;
+    } else {
+        print("GenerateGrammarCmd result: " + $result + "\n");
+        text -e -label "Models generated successfully." -backgroundColor 0 0.5 0 $statusLabel3;
+    }
+}
+
 global proc showMyWindow() {
     if (`window -exists myWindow`) {
         deleteUI myWindow;
@@ -81,17 +96,17 @@ global proc showMyWindow() {
     columnLayout -adjustableColumn true;
     button -label "Select Object" -command "loadObject()" -ann "Select an object in the scene to build a grammar from.";
     global string $statusLabel1;
-    $statusLabel1 = `text -label "Select an object to generate a grammar"
+    $statusLabel1 = `text -label "Select a mesh and press select object"
         -backgroundColor 0.5 0.5 0.5
         -height 25 -align "center"`;
 
     button -label "Generate Grammar" -command "generateGrammar()" -ann "Generate a grammar from the selected object.";
     global string $statusLabel2;
-    $statusLabel2 = `text -label "Grammar generation status"
+    $statusLabel2 = `text -label "Generate a grammar from selected mesh"
         -backgroundColor 0.5 0.5 0.5
         -height 25 -align "center"`;
 
-    button -label "Export Grammar" -command "exportGrammar()" -ann "Export the grammar as a .txt file.";
+    button -label "Export Grammar" -command "exportGrammar()" -ann "Export the grammar as a .json file.";
     setParent ..;
     setParent ..;
 
@@ -99,7 +114,7 @@ global proc showMyWindow() {
     frameLayout -label "Option 2: Load Existing Grammar File" -collapsable true;
     columnLayout -adjustableColumn true;
     global string $statusLabel3;
-    $statusLabel3 = `text -label "Load a grammar"
+    $statusLabel3 = `text -label "Load an existing grammar"
         -backgroundColor 0.5 0.5 0.5
         -height 25 -align "center"`;
     button -label "Load Grammar" -command ("openTxtFileBrowser \"" + $statusLabel3 + "\"") -ann "Load a grammar text file.";
@@ -131,7 +146,7 @@ global proc showMyWindow() {
 
     // Generation Button + Cancel
     rowLayout -numberOfColumns 2 -columnWidth2 150 150 -adjustableColumn 2;
-    button -label "Generate Models" -command "onGeneratePressed()" -ann "Generate new models using the current grammar.";
+    button -label "Generate Models" -command "generateModels()" -ann "Generate new models using the current grammar.";
     button -label "Cancel" -command "onCancelPressed()" -ann "Close the Grammarizer Tool window.";
     setParent ..;
 

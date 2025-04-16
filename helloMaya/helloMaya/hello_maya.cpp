@@ -1,6 +1,8 @@
 #include "hello_maya.h"
 #include <maya/MFnPlugin.h>
 #include "LoadMesh.h"
+#include "generateGrammar.h"
+#include "generateModels.h"
 // define EXPORT for exporting dll functions
 #define EXPORT _declspec(dllexport)
 // Maya Plugin creator function
@@ -40,7 +42,8 @@ EXPORT MStatus initializePlugin(MObject obj)
 	MFnPlugin plugin(obj, "CIS660", "1.0", "Any");
 	status = plugin.registerCommand("helloMaya", helloMaya::creator);
 	status = plugin.registerCommand("LoadMeshCmd", LoadMeshCmd::creator);
-
+	status = plugin.registerCommand("GenerateGrammarCmd", GenerateGrammarCmd::creator);
+	status = plugin.registerCommand("GenerateModelsCmd", GenerateModelsCmd::creator);
 
 	if (!status) {
 		status.perror("registerCommand failed");
@@ -67,6 +70,8 @@ EXPORT MStatus uninitializePlugin(MObject obj)
 	MFnPlugin plugin(obj);
 	status = plugin.deregisterCommand("helloMaya");
 	status = plugin.deregisterCommand("LoadMeshCmd");
+	status = plugin.deregisterCommand("GenerateGrammarCmd");
+	status = plugin.deregisterCommand("GenerateModelsCmd");
 
 	if (!status)
 		status.perror("deregisterCommand failed");
