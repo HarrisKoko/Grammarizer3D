@@ -1,60 +1,51 @@
-#include "LoadMesh.h"
-#include <maya/MFnMesh.h>
-#include <maya/MItSelectionList.h>
-#include <maya/MSelectionList.h>
-#include <maya/MGlobal.h>
-#include <maya/MPointArray.h>
-#include <maya/MIntArray.h>
-#include <maya/MDagPath.h>
-#include <iostream>
-#include <maya/MObjectArray.h>          
-#include <maya/MPlug.h>                 
-#include <maya/MPlugArray.h>            
-#include <maya/MFnDependencyNode.h>     
+﻿#include "LoadMesh.h"
 
 
-Graph LoadMeshCmd::s_loadedGraph  = Graph();
+// Static graph object that stores the loaded graph
+Graph LoadMeshCmd::s_loadedGraph = Graph();
+// Boolean flag to track if the graph has been loaded
 bool LoadMeshCmd::s_hasLoadedGraph = false;
 
+// Returns the loaded graph
 Graph& LoadMeshCmd::getLoadedGraph() {
     return s_loadedGraph;
 }
 
+// Returns whether a graph has been loaded
 bool LoadMeshCmd::hasLoadedGraph() {
     return s_hasLoadedGraph;
 }
 
+
 MStatus LoadMeshCmd::doIt(const MArgList& args) {
-    // Get the selected mesh in Maya
+    // Get the active selection list in Maya
     MSelectionList selection;
     MGlobal::getActiveSelectionList(selection);
 
-    // Makes iterable list excluding anything not a kMesh.
+    // Set up the iterator to go through selected mesh objects
     MItSelectionList iter(selection, MFn::kMesh);
 
-    // If no object selected, show error.
+    // If no object is selected, display an error
     if (iter.isDone()) {
         MGlobal::displayError("No mesh selected.");
         return MS::kFailure;
     }
 
-    // loop through meshes
+    // Loop through each selected mesh
     for (; !iter.isDone(); iter.next()) {
-        // Get dagPath (required for making MFnMesh) for current mesh
+        // Get the dagPath (required for creating MFnMesh) for the current mesh
         MDagPath dagPath;
         iter.getDagPath(dagPath);
 
-        // Get MFnMesh from dagPath
+        // Create MFnMesh from the dagPath
         MFnMesh meshFn(dagPath);
         MGlobal::displayInfo("Mesh loaded: " + meshFn.name());
 
-        // Get Shaders
-        // Get connected shaders
-        MObjectArray shaders;
-        MIntArray shaderIndices; // Maps each face to a shader index
-        meshFn.getConnectedShaders(dagPath.instanceNumber(), shaders, shaderIndices);
+        // Get the connected shaders for the current mesh
+        //Shaders: list of unique shaders in the mesh
+        //shaderIndicies: length of faces in order and stores index to shader
+        meshFn.getConnectedShaders(dagPath.instanceNumber(), this->shaders, this->shaderIndices); //this sets shader indices to the index in shaders for that face
 
-        // Print material info per shading group
         for (unsigned int i = 0; i < shaders.length(); ++i) {
             MObject shadingGroup = shaders[i];
 
@@ -67,6 +58,7 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
                 MObject shaderNode = connections[0].node();
                 MFnDependencyNode shaderFn(shaderNode);
 
+                // Display shader info directly without storing unique shaders
                 MGlobal::displayInfo("Material " + shaderFn.name() + " is connected to shading group " + MFnDependencyNode(shadingGroup).name());
 
                 // Example: try to get the color plug
@@ -84,16 +76,15 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
         }
 
 
-
-        // Get vertices 
+        // Retrieve vertex positions of the mesh
         MPointArray verts;
         meshFn.getPoints(verts, MSpace::kWorld);
 
-        // Get face information
+        // Get face information (counts and vertex indices for each face)
         MIntArray faceCounts, faceConnects;
         meshFn.getVertices(faceCounts, faceConnects);
 
-        // Print vertex data
+        // Print the vertex data for debugging
         for (unsigned int i = 0; i < verts.length(); ++i) {
             MString msg = MString("") + i + ": (" +
                 verts[i].x + ", " +
@@ -102,13 +93,14 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
             MGlobal::displayInfo(msg);
         }
 
-        // Print face data
+        // Print the face data (vertex indices for each face)
         MGlobal::displayInfo("Faces:");
         int idx = 0;
         for (unsigned int i = 0; i < faceCounts.length(); ++i) {
             char buffer[128];
-            snprintf(buffer, sizeof(buffer), "Face %u:", i);  
+            snprintf(buffer, sizeof(buffer), "Face %u:", i);
             MString faceMsg(buffer);
+            // Loop through the vertices of the face and append them to the message
             for (int j = 0; j < faceCounts[i]; ++j) {
                 faceMsg += " ";
                 faceMsg += faceConnects[idx++];
@@ -116,17 +108,16 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
             MGlobal::displayInfo(faceMsg);
         }
 
-
         std::cout << "Loaded mesh with " << verts.length() << " vertices and "
             << faceCounts.length() << " faces.\n";
 
-        // Convert vertex data to glm::vec3
+        // Convert vertex data to glm::vec3 for further processing
         std::vector<glm::vec3> vertexPositions;
         for (unsigned int i = 0; i < verts.length(); ++i) {
             vertexPositions.emplace_back(verts[i].x, verts[i].y, verts[i].z);
         }
 
-        // Convert face data to vector of {vertex indices, face index} pairs
+        // Convert face data into pairs of vertex indices and corresponding shader index
         std::vector<std::pair<std::vector<int>, int>> faceData;
         idx = 0;
         for (unsigned int i = 0; i < faceCounts.length(); ++i) {
@@ -134,19 +125,21 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
             for (int j = 0; j < faceCounts[i]; ++j) {
                 faceVerts.push_back(faceConnects[idx++]);
             }
-            faceData.emplace_back(faceVerts, static_cast<int>(i));
+
+            // Get the shader index associated with the current face
+            int shaderIndex = shaderIndices[i];  // Use shaderIndices to get the shader index for this face
+            faceData.emplace_back(faceVerts, shaderIndex);  // Store the vertex indices and the shader index as a pair
         }
 
-        // Construct the graph
+        // Create a graph object using the vertex positions and face data
         s_loadedGraph = Graph(vertexPositions, faceData);
         s_hasLoadedGraph = true;
-
-
     }
 
     return MS::kSuccess;
 }
 
+// Creator method for the LoadMeshCmd class
 void* LoadMeshCmd::creator() {
     return new LoadMeshCmd();
 }
