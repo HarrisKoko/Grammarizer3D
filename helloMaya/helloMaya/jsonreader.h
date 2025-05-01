@@ -20,7 +20,7 @@ public:
 
     static bool WriteGraphToFile(const QString &local_path, const Graph *graph);
     static bool WriteGrammarToFile(const QString &local_path, const std::vector<std::array<Graph*,2>> &graphGrammar);
-    static std::vector<std::pair<Graph, Graph> *> LoadGrammarFromFile(const QString &local_path);
+    static std::vector<std::pair<Graph, Graph>> LoadGrammarFromFile(const QString &local_path);
 private:
     static void jsonToGraph(Graph *result, QJsonObject json);
     static bool graphToJSON(QJsonObject* json, const Graph* graph);

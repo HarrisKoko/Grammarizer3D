@@ -12,7 +12,7 @@ void Primitive::resetIDs(){
     Primitive::lastID = 0;
 }
 
-bool Primitive::sameHEs(const Primitive &p)
+bool Primitive::sameHEs(const Primitive &p) const
 {
     // return std::equal(this->halfEdgeData.cbegin(),
     //                   this->halfEdgeData.cend(),

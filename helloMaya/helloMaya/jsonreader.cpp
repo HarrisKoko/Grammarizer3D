@@ -109,6 +109,8 @@ void JSONReader::jsonToGraph(Graph* result, QJsonObject json)
             // invalid TODO dunno how/if wanna handle
         }
     }
+
+    result->isSingleEdge = json["isSingleEdge"].toBool(false);
 }
 
 Graph JSONReader::LoadGraphFromFile(const QString &local_path)
@@ -125,6 +127,10 @@ Graph JSONReader::LoadGraphFromFile(const QString &local_path)
     return result;
 }
 
+// TODO could save positional data too? for saving during grammar applying steps
+// TODO rn:
+//  add GUI button; try to add positional data to graph class but maybe not to this part yet; try to add intersection constraint
+//      done;   done (but not this part yet);   done for random case but not done for eigen version
 bool JSONReader::graphToJSON(QJsonObject* json, const Graph* graph) {
     QJsonArray prims;
     for (unsigned int i = 0; i < graph->primitives.size(); ++i) {
@@ -181,6 +187,8 @@ bool JSONReader::graphToJSON(QJsonObject* json, const Graph* graph) {
         }
     }
     json->insert("boundaryString", boundary);
+
+    json->insert("isSingleEdge", graph->isSingleEdge);
     return true;
 }
 
@@ -233,14 +241,14 @@ bool JSONReader::WriteGrammarToFile(const QString &local_path, const std::vector
 }
 
 
-std::vector<std::pair<Graph,Graph>*> JSONReader::LoadGrammarFromFile(const QString &local_path)
+std::vector<std::pair<Graph,Graph>> JSONReader::LoadGrammarFromFile(const QString &local_path)
 {
     // TODO not sure exact best return type? probably should just make a grammar class that stores this
     // NOTE currently this uses arrays of 2 graphs while other uses arrays of 2 graph pointers so inconsistent
     //      now uses a pair of graphs which still isn't same
     // TODO now uses same type as the random rule applying function but I HAVE NO IDEA if that's a reasonable way to pass it out (seems like might have some issues with clearing memory just intuitively speaking? but not sure)
     QFile file(local_path);
-    std::vector<std::pair<Graph,Graph>*> result;
+    std::vector<std::pair<Graph,Graph>> result;
     // std::vector<std::array<Graph,2>> result;
     // Graph result;
     if (file.open(QIODevice::ReadOnly)) {
@@ -264,7 +272,7 @@ std::vector<std::pair<Graph,Graph>*> JSONReader::LoadGrammarFromFile(const QStri
             jsonToGraph(&gPair.second, graphObj1);
 
             // }
-            result.push_back(&gPair);
+            result.push_back(gPair);
         }
     }
     return result;

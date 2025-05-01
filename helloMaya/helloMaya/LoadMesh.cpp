@@ -7,6 +7,11 @@
 #include <maya/MIntArray.h>
 #include <maya/MDagPath.h>
 #include <iostream>
+#include <maya/MObjectArray.h>          
+#include <maya/MPlug.h>                 
+#include <maya/MPlugArray.h>            
+#include <maya/MFnDependencyNode.h>     
+
 
 Graph LoadMeshCmd::s_loadedGraph  = Graph();
 bool LoadMeshCmd::s_hasLoadedGraph = false;
@@ -42,6 +47,43 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
         // Get MFnMesh from dagPath
         MFnMesh meshFn(dagPath);
         MGlobal::displayInfo("Mesh loaded: " + meshFn.name());
+
+        // Get Shaders
+        // Get connected shaders
+        MObjectArray shaders;
+        MIntArray shaderIndices; // Maps each face to a shader index
+        meshFn.getConnectedShaders(dagPath.instanceNumber(), shaders, shaderIndices);
+
+        // Print material info per shading group
+        for (unsigned int i = 0; i < shaders.length(); ++i) {
+            MObject shadingGroup = shaders[i];
+
+            // Find the surface shader connected to the shading group
+            MPlug surfaceShaderPlug = MFnDependencyNode(shadingGroup).findPlug("surfaceShader", true);
+            MPlugArray connections;
+            surfaceShaderPlug.connectedTo(connections, true, false);
+
+            if (connections.length() > 0) {
+                MObject shaderNode = connections[0].node();
+                MFnDependencyNode shaderFn(shaderNode);
+
+                MGlobal::displayInfo("Material " + shaderFn.name() + " is connected to shading group " + MFnDependencyNode(shadingGroup).name());
+
+                // Example: try to get the color plug
+                MPlug colorPlug = shaderFn.findPlug("color", true);
+                if (!colorPlug.isNull()) {
+                    float r, g, b;
+                    colorPlug.child(0).getValue(r);
+                    colorPlug.child(1).getValue(g);
+                    colorPlug.child(2).getValue(b);
+                    char buf[128];
+                    snprintf(buf, sizeof(buf), "  Color: (%.2f, %.2f, %.2f)", r, g, b);
+                    MGlobal::displayInfo(buf);
+                }
+            }
+        }
+
+
 
         // Get vertices 
         MPointArray verts;
