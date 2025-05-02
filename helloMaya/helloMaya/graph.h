@@ -1,5 +1,4 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#pragma once
 
 #include "primitive.h"
 #include "utils.h"
@@ -116,8 +115,8 @@ public:
     bool isIsomorphicTo(const Graph& other) const;
     bool sameBoundaryString(const Graph& other) const;
 
-    static std::vector<std::pair<Graph, Graph> > generateRules(const std::vector<Primitive *> &primitives, std::vector<glm::vec3> faceColors, unsigned int maxSteps);
-    std::vector<std::pair<Graph, Graph>> generateRules(unsigned int maxSteps = 12) const;
+    static std::vector<std::pair<Graph, Graph> > generateRules(const std::vector<Primitive*> &primitives, std::vector<glm::vec3> faceColors, unsigned int maxSteps);
+    std::vector<std::pair<Graph, Graph>> generateRules(unsigned int maxSteps = 12, bool includeWholeStarter = false) const;
     // std::vector<Graph> splice();
 
 
@@ -126,7 +125,7 @@ public:
     std::vector<Graph> generateHierarchy(int steps) const;
 
 
-    std::vector<glm::vec3> samplePositions(const std::map<unsigned int,glm::vec3>& setValues, double& oError, float minEdgeLength = 1, float maxEdgeLength = 20, float minPosition = -10, float maxPosition = 10) const;
+    std::vector<glm::vec3> samplePositions(const std::map<unsigned int, glm::vec3>& setValues, double& oError, float minEdgeLength = 1, float maxEdgeLength = 20, float minPosition = -10, float maxPosition = 10, unsigned int maxTries = 50000, float cosMin = 0.9) const;
     // TODO probably store result between iterations and update
 
 
@@ -152,4 +151,4 @@ public:
 
 };
 
-#endif // GRAPH_H
+// #endif // GRAPH_H

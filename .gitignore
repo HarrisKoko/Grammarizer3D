@@ -2,3 +2,5 @@
 **/Clp-releases.1.17.10-x86_64-w64-mingw64/
 **/.vs/
 **/helloMaya.sln
+/helloMaya/helloMaya/helloMaya.vcxproj
+/helloMaya/helloMaya/x64/

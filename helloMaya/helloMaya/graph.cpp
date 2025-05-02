@@ -162,7 +162,7 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
 
         glm::vec3 iPos = vertexPositions.at(i);
 
-        p->cachedPos = iPos; // just for displaying base graph well; not used in construction from grammar
+        // p->cachedPos = iPos; // just for displaying base graph well; not used in construction from grammar
 
         // add halfEdge for each adjacent vertex
         for (const auto &adjData : adjacentVerts.at(i)) {
@@ -281,6 +281,7 @@ Graph::Graph(const Graph &other)
 
     // this->sortBoundaryGraphElements();
 
+    this->boundaryGeneric = other.boundaryGeneric;
 #endif
 
 
@@ -337,6 +338,7 @@ Graph &Graph::operator=(const Graph & other)
 
     // this->sortBoundaryGraphElements();
 
+    this->boundaryGeneric = other.boundaryGeneric;
 
 #endif
 
@@ -1120,9 +1122,10 @@ std::optional<Graph> Graph::applyRandomReplacementRule(const std::vector<std::pa
                 // }
                 // std::cout << "fail" << std::endl;
             }
-            if (result.has_value()) {
+            if (result.has_value()
+                && !(result->isIsomorphicTo(*this))) {
                 //attempt to find positions
-
+                // skipping rule applications which don't do anything
                 std::map<unsigned int,glm::vec3> cachedPositionMap;
                 std::vector<unsigned int> unfreedIndices;
                 for (unsigned int i = 0; i < result->primitives.size(); ++i) {
@@ -1167,6 +1170,7 @@ std::optional<Graph> Graph::applyRandomReplacementRule(const std::vector<std::pa
                     }
                 //     maxLen *= 2.0;
                 // }
+                    // posError = 0;
                 if (posError >= 0.0 && posError <= minError) {
                     // update cached positions
 
@@ -1250,6 +1254,7 @@ std::vector<Graph> Graph::branchGlue(const Graph &other) const
                     nextElem->prev = target;
                 }
                 // rotate two pairs of edges, remove island
+
                 if (oE == nullptr) {
                     continue;
                 }
@@ -1663,6 +1668,9 @@ bool Graph::isIsomorphicTo(const Graph &other) const
 
     // TODO I should probably rewrite this to reduce redundancy since performance is an issue
 
+    if (other.primitives.size() != this->primitives.size()) {
+        return false;
+    }
     std::vector<Primitive*> primsToMatch;
     for (const uPtr<Primitive>& p : other.primitives) {
         primsToMatch.push_back(p.get());
@@ -1929,7 +1937,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
     // std::vector<std::vector<Graph>> hierarchy;
     // std::vector<Graph> hierarchy;
 
-    std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph*> graphsByBoundary{};
+    std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph> graphsByBoundary{};
     // std::unordered_map<std::vector<std::vector<HalfEdgeGraph>>, Graph> graphsByBoundary{};
 
     // TODO maybe just represent as single std::vector<Graph>? only previous tier matters I think since only used to construct next tier; otherwise just have all of them in order probably fine
@@ -1947,16 +1955,19 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
         Graph g = Graph(std::vector<HalfEdgeGraph>({h, -h}));
         g.isSingleEdge = true;
         g.face_colors = faceColors;
-        bool notYetAdded = true;
-        for (const Graph& oldG : hierarchy) {
-            if (g.sameBoundaryString(oldG)) {
-                // or could use isomorphism, dunno which more efficient (just avoiding hitting both HE and its opposite)
-                notYetAdded = false;
-                break;
-            }
-        }
-        if (notYetAdded) {
-            hierarchy.push_back(g);
+        // bool notYetAdded = true;
+        // for (const Graph& oldG : hierarchy) {
+        //     if (g.sameBoundaryString(oldG)) {
+        //         // or could use isomorphism, dunno which more efficient (just avoiding hitting both HE and its opposite)
+        //         notYetAdded = false;
+        //         break;
+        //     }
+        // }
+        // if (notYetAdded) {
+        //     hierarchy.push_back(g);
+        // }
+        if (!graphsByBoundary.contains(g.getBoundaryGeneric())) {
+            graphsByBoundary.insert({g.getBoundaryGeneric(), g});
         }
     }
 #endif
@@ -1978,7 +1989,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
         }
         if (noMatches) {
             tier1.push_back(g);
-            graphsByBoundary.insert({g.getBoundaryGeneric(), &g});
+            graphsByBoundary.insert({g.getBoundaryGeneric(), g});
             prevTier.push_back(g);
         }
         // TODO realize also might need to make rules for primitive to single edge case once single-edge-no-vertex graphs added
@@ -2007,7 +2018,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
     // std::vector<Graph> prevTier = tier1;
     for (unsigned int i = 0; i < maxSteps; ++i) {
         std::vector<Graph> newTier;
-        std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph*> newGraphsByBoundary{};
+        std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph> newGraphsByBoundary{};
 
         // TODO should add checks to avoid redundancy? general graph isomorphism test I guess should do
         for (const Graph& g : prevTier) {
@@ -2027,8 +2038,14 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                     //     newTier.push_back(newGraph);
                     // }
                     const auto& bound = newGraph.getBoundaryGeneric();
-                    if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(*newGraphsByBoundary.at(bound))) {
+                    // if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+                    // auto bound = newGraph.getBoundaryGeneric();
+                    if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
                         newTier.push_back(newGraph);
+                        // if (bound != newGraph.getBoundaryGeneric()) {
+                        //     std::cout << "AAA" << std::endl;
+                        // }
+                        newGraphsByBoundary.insert({newGraph.getBoundaryGeneric(), (newTier.back())});
                     }
                 }
                 // newTier.insert(newTier.end(), branchGlued.begin(), branchGlued.end());
@@ -2048,8 +2065,13 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                 //     newTier.push_back(newGraph);
                 // }
                 const auto& bound = newGraph.getBoundaryGeneric();
-                if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(*newGraphsByBoundary.at(bound))) {
+                // if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+                // auto bound = newGraph.getBoundaryGeneric();
+                if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
                     newTier.push_back(newGraph);
+
+                    newGraphsByBoundary.insert({newGraph.getBoundaryGeneric(), (newTier.back())});
+
                 }
             }
 
@@ -2106,6 +2128,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                     // complete graph
                     result.push_back({emptyGraph, newGraph});
                     usedGraphs.push_back(newGraph);
+                    std::cout << "Added starter rule" << std::endl;
                 } else {
                     bool ruleAdded = false;
                     // for (const Graph& otherGraph : hierarchy) {
@@ -2119,7 +2142,27 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                     // }
                     auto bound = newGraph.getBoundaryGeneric();
                     if (graphsByBoundary.contains(bound)) {
-                        result.push_back({*graphsByBoundary.at(bound),newGraph});
+
+                        //  trying having a check here for if newGraph can generate positions w/ very loose constraints.
+                        //  if not, remove but don't make rule
+                        //  theoretically could check at every time a graph generated and would make hierarchy smaller but time consuming (though also time consuming having big hierarchy) and riskier since will probably over-remove cases (which this also will but fewer chances to fail)
+                        if (newGraph.isIsomorphicTo(graphsByBoundary.at(bound))) {
+
+                            // TODO find why this isn't being caught earlier
+                            // !!!!!!!!!!!
+
+
+                            // Graph g = graphsByBoundary.at(bound);
+                            // std::cout << newGraph.isIsomorphicTo(graphsByBoundary.at(bound)) << std::endl;
+                            std::cout << "Repeated element in tier " << i << std::endl;
+                        } else {
+                            double err;
+                            std::map<unsigned int,glm::vec3> emptyPositionMap;
+                            newGraph.samplePositions(emptyPositionMap, err, 1, 20, -10, 10, 10000, 0.5);
+                            if (err != -1) {
+                                result.push_back({graphsByBoundary.at(bound),newGraph});
+                            }
+                        }
                         ruleAdded = true;
                     }
                     // TODO figure out how to handle the special case of single-edged graph
@@ -2133,7 +2176,9 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                     } else {
                         // TODO these shouldn't copy probably, just reference, dunno how to avoid
                         //  TODO maybe prevtier as vector of pointers? or all as vectors of pointers?
-                        prevTier.push_back(newGraph);
+                        prevTier.push_back(std::move(newGraph));
+                        graphsByBoundary.insert({newGraph.getBoundaryGeneric(), (prevTier.back())});
+
                         // hierarchy.push_back(std::move(newGraph));
                         // TODO is it better to not add to hierarchy until after? with hierarchy push here can have rules that go between two graphs at same level but I'm unclear if that's intended or not in the algorithm as laid out in the paper. seems to make smaller grammars at least
                         // toAdd.push_back(std::move(newGraph));
@@ -2182,16 +2227,21 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
     return result;
 }
 
+// TODO seems in 3d case examples I've tried to generate a lot of rules which don't do anything useful
+//  I think are technically valid rules though in how defined right now, just e.g. things that swap around connections but don't add anything ? dunno if a way to avoid
 
-
-std::vector<std::pair<Graph, Graph> > Graph::generateRules(unsigned int maxSteps) const
+std::vector<std::pair<Graph, Graph> > Graph::generateRules(unsigned int maxSteps, bool includeWholeStarter) const
 {
     // generateRules()
     std::vector<Primitive*> primPtrs;
     for (const uPtr<Primitive>& p : this->primitives) {
         primPtrs.push_back(p.get());
     }
-    return generateRules(primPtrs, this->face_colors, maxSteps);
+    std::vector<std::pair<Graph, Graph>> rules = generateRules(primPtrs, this->face_colors, maxSteps);
+    if (includeWholeStarter) {
+        rules.push_back({Graph(),*this});
+    }
+    return rules;
 }
 
 
@@ -2389,7 +2439,7 @@ bool doIntersect(const glm::vec3& p1, const glm::vec3& q1, const glm::vec3& p2, 
 
 #if 1
 
-std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::vec3>& setValues, double& oError, float minEdgeLength, float maxEdgeLength, float minPosition, float maxPosition) const
+std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::vec3>& setValues, double& oError, float minEdgeLength, float maxEdgeLength, float minPosition, float maxPosition, unsigned int maxTries, float cosMin) const
 {
     oError = -1;
     if (this->primitives.size() == 0) {
@@ -2433,7 +2483,7 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
     // X height = A width = primitives.size() * 3 + #edges
     // B = all 0s
 
-    unsigned int edgeIndex = 0;
+    // unsigned int edgeIndex = 0;
     // unsigned int edgeIndex = this->primitives.size() * 3;
     // each edge length used just once, so just increment position each time one used
     // unsigned int rowsAdded = 0;
@@ -2479,6 +2529,8 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
 
     // std::vector<glm::vec3>
 
+    // TODO I think might have some issue with constraintMap that makes it less reliable than it should be? IDK how I had it set up totally so something to look into
+
     // TODO probably skip p0 and make always 0,0,0
     for (const auto& [prim, index] : unmatchedPrimIndices) {
         // TODO try: add just edges that have non-null connections and angle in upper half of values (>= 0)
@@ -2515,8 +2567,9 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
                     glm::mat4 rotation = glm::rotate(-turnAngle, turnDirection);
 
                     direction = glm::vec3(rotation * glm::vec4(direction, 1));
-                } else if (glm::dot(normal, forward) < 0) {
+                // } else if (glm::dot(normal, forward) < 0) {
                     // direction.x = -direction.x; // TODO not sure if that's totally right
+                        // unnecessary it seems?
                 }
 #endif
 
@@ -2587,7 +2640,7 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
                 // tripletList.push_back(Eigen::Triplet<float>(rowsAdded + 3,     edgeIndex, 1));
 
                 // rowsAdded += 3;
-                ++edgeIndex;
+                // ++edgeIndex;
 
             }
         }
@@ -2711,16 +2764,17 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
     std::mt19937 gen(rd());
     // std::uniform_int_distribution<> distrib(0, potentialPairs.size() - 1);
     std::uniform_real_distribution<float> dist(minPosition, maxPosition);
-    std::uniform_real_distribution<float> edgeDist(minEdgeLength, maxEdgeLength);
+    std::uniform_real_distribution<float> edgeDist(minEdgeLength + 0.5f, maxEdgeLength - 1.f);
+    // std::uniform_real_distribution<float> edgeDist(minEdgeLength, maxEdgeLength);
 
     // bool notDone = true;
-    const float sampleEpsilon = 0.0001f;
+    // const float sampleEpsilon = 0.0001f;
     // const float cosMin = 0.995f;
-    const float cosMin = 0.99f;
+    // const float cosMin = 0.98f;
 
     const glm::vec3 zeroVector(0);
     const unsigned int primSize = this->primitives.size();
-    int triesLeft = 300000;
+    // int triesLeft = 30000;
     std::vector<glm::vec3> startTry(primSize);
     if (setValues.size() == 0) {
         startTry.at(0) = glm::vec3(0);
@@ -2729,7 +2783,9 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
             startTry.at(index) = pos;
         }
     }
-    while (--triesLeft >= 0) {
+    unsigned int tries;
+    for (tries = 0; tries < maxTries; ++tries) {
+    // while (--triesLeft >= 0) {
         // result = std::vector<glm::vec3>(primSize);
 
         result = startTry;
@@ -2761,7 +2817,11 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
             glm::vec3 diff = pos2 - pos1;
             // length check
             float d = glm::length(diff);
+#if 1
+            if (d < minEdgeLength) {
+#else
             if (d < minEdgeLength || d > maxEdgeLength) {
+#endif
                 fail = true;
                 break;
             }
@@ -2776,35 +2836,37 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
 
             // if (nDiff.x >= dir.)
 
+            //TODO face intersection check instead
             // intersection check
             // TODO maybe run all intersection checks after all position checks done? idk if really matters
-            //for (const auto& [idB1, idB2, dirB] : constraints) {
-            //    if (id1 != idB1 && id1 != idB2 && id2 != idB1 && id2 != idB2) {
-            //        glm::vec3 posB1 = result.at(idB1);
-            //        glm::vec3 posB2 = result.at(idB2);
-            //        // glm::vec3 diffB = posB2 - posB1;
-            //        // glm::vec3 p = glm::cross(diff, diffB);
-            //        // if (p != zeroVector) {
-            //        //     // not parallel, lines intersect; check if in segment range
-            //        //     //  TODO will have to test different when in 3D (also need to test face intersection too then)
-            //        //     glm::vec3 startDiff = posB1 - pos1;
-            //        //     float testVal = glm::dot(glm::cross(startDiff, posB1), p) / glm::dot(p,p);
-            //        //     if (testVal > 0 && testVal < 1) {
-            //        //         fail = true;
-            //        //         break;
-            //        //     }
-            //        // }
-            //        // TODO make sure this test is right
-            //        if (doIntersect(pos1, pos2, posB1, posB2)) {
-            //            fail = true;
-            //            break;
-            //        }
-            //    }
-            //}
-            //if (fail) {
-            //    break;
-            //}
-
+#if 0
+            for (const auto& [idB1, idB2, dirB] : constraints) {
+                if (id1 != idB1 && id1 != idB2 && id2 != idB1 && id2 != idB2) {
+                    glm::vec3 posB1 = result.at(idB1);
+                    glm::vec3 posB2 = result.at(idB2);
+                    // glm::vec3 diffB = posB2 - posB1;
+                    // glm::vec3 p = glm::cross(diff, diffB);
+                    // if (p != zeroVector) {
+                    //     // not parallel, lines intersect; check if in segment range
+                    //     //  TODO will have to test different when in 3D (also need to test face intersection too then)
+                    //     glm::vec3 startDiff = posB1 - pos1;
+                    //     float testVal = glm::dot(glm::cross(startDiff, posB1), p) / glm::dot(p,p);
+                    //     if (testVal > 0 && testVal < 1) {
+                    //         fail = true;
+                    //         break;
+                    //     }
+                    // }
+                    // TODO make sure this test is right
+                    if (doIntersect(pos1, pos2, posB1, posB2)) {
+                        fail = true;
+                        break;
+                    }
+                }
+            }
+            if (fail) {
+                break;
+            }
+#endif
         }
         if (!fail) {
 
@@ -2814,15 +2876,17 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
 
     }
 
-    oError = 0.0; // TODO some better measure of error so can control precision of whole system
 
-    if (triesLeft < 0) {
+    if (tries >= maxTries) {
+        // if (triesLeft < 0) {
         oError = -1;
-        result = std::vector<glm::vec3>(this->primitives.size());
+        // result = std::vector<glm::vec3>(this->primitives.size());
 
-        for (unsigned int i = 0; i < result.size(); ++i) {
-            result.at(i) = glm::vec3(i,0,i);
-        }
+        // for (unsigned int i = 0; i < result.size(); ++i) {
+        //     result.at(i) = glm::vec3(i,0,i);
+        // }
+    } else {
+        oError = 0.0; // TODO some better measure of error so can control precision of whole system
     }
 
 
