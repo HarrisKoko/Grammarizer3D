@@ -156,6 +156,7 @@
     <ClInclude Include="graph.h" />
     <ClInclude Include="hello_maya.h" />
     <ClInclude Include="jsonreader.h" />
+    <ClInclude Include="loadGrammar.h" />
     <ClInclude Include="LoadMesh.h" />
     <ClInclude Include="primitive.h" />
     <ClInclude Include="utils.h" />
@@ -166,6 +167,7 @@
     <ClCompile Include="graph.cpp" />
     <ClCompile Include="hello_maya.cpp" />
     <ClCompile Include="jsonreader.cpp" />
+    <ClCompile Include="loadGrammar.cpp" />
     <ClCompile Include="LoadMesh.cpp" />
     <ClCompile Include="primitive.cpp" />
     <ClCompile Include="utils.cpp" />

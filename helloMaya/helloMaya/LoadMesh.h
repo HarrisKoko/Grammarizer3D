@@ -26,13 +26,13 @@ public:
     MStatus doIt(const MArgList& args) override;
 
     static Graph& getLoadedGraph();
-    static bool hasLoadedGraph(); 
-    MObjectArray shaders;
-    MIntArray shaderIndices;
+    static bool hasLoadedGraph();
+    static MObjectArray& getShaders();
 
 private:
     static Graph s_loadedGraph;
     static bool s_hasLoadedGraph;
+    static MObjectArray shaders;
 };
 
 #endif // LOAD_MESH_CMD_H

@@ -1,8 +1,21 @@
 #include "generateModels.h"
+#include <maya/MFnSet.h>
+
+#include <maya/MFnMesh.h>
+#include <maya/MFnDagNode.h>
+#include <maya/MFnSet.h>
+#include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MObjectArray.h>
+#include <maya/MGlobal.h>
+#include <maya/MDagPath.h>
+#include <maya/MFnDagNode.h>
+#include <maya/MItDag.h>
+#include <maya/MFnComponentListData.h>
 
 MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
     const std::vector<int>& faceCounts,
-    const std::vector<int>& faceConnects)
+    const std::vector<int>& faceConnects,
+    const std::vector<int>& shaderIndices)
 {
     MStatus status;
 
@@ -22,7 +35,7 @@ MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
         mFaceConnects.append(idx);
     }
 
-    // Create mesh
+    // Create the mesh
     MFnMesh meshFn;
     MObject meshObj = meshFn.create(
         mPoints.length(),
@@ -35,16 +48,58 @@ MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
     );
 
     if (!status) {
-        MGlobal::displayError("Failed to create mesh");
+        MGlobal::displayError("Failed to create mesh.");
         return status;
     }
 
-    // Rename the mesh
     MFnDagNode dagNode(meshObj);
     dagNode.setName("pGeneratedMesh");
 
+    // Get shader list
+    MObjectArray shaderList = LoadMeshCmd::getShaders();
+    if (shaderList.length() == 0) {
+        MGlobal::displayWarning("No shaders provided.");
+        return MS::kSuccess;
+    }
+
+    // Get the DAG path to the mesh
+    MDagPath meshPath;
+    status = MDagPath::getAPathTo(meshObj, meshPath);
+    if (!status) {
+        MGlobal::displayError("Failed to get DAG path to mesh.");
+        return status;
+    }
+
+    // Assign each face to the correct shader set
+    for (unsigned int faceIdx = 0; faceIdx < shaderIndices.size(); ++faceIdx) {
+        int shaderIdx = shaderIndices[faceIdx];
+
+        if (shaderIdx < 0 || shaderIdx >= static_cast<int>(shaderList.length())) {
+            continue;
+        }
+
+        MObject shadingGroup = shaderList[shaderIdx];
+        MFnSet shadingSet(shadingGroup, &status);
+        if (!status) {
+            MGlobal::displayWarning("Invalid shading group.");
+            continue;
+        }
+
+        // Create a face component
+        MFnSingleIndexedComponent compFn;
+        MObject compObj = compFn.create(MFn::kMeshPolygonComponent, &status);
+        compFn.addElement(faceIdx);
+
+        // Add member using MDagPath + component
+        status = shadingSet.addMember(meshPath, compObj);
+        if (!status) {
+            MGlobal::displayWarning("Failed to add face " + MString() + faceIdx + " to shading group.");
+        }
+    }
+
     return MS::kSuccess;
 }
+
 
 
 
@@ -63,7 +118,6 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
     double d;
     std::vector<glm::vec3> verts = graph.samplePositions(s, d);
     std::vector<std::pair<std::vector<int>, int>> faces;
-    std::vector<glm::vec3> faceColors({ {0.f,0.f,0.f},{1.f,1.f,1.f} });
 
     std::map<Primitive*, int> primIndex;
 
@@ -119,7 +173,9 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
                 }
 
 
-                faces.push_back(std::move(face));
+                faces.push_back(std::move(face)); 
+                // i think this already sets face label. 
+                // face is a pair of the vector of positions and the int face label which is now the index in LoadMeshCmd::getShaders() list?
             }
         }
     }
@@ -132,12 +188,14 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
     // Get vertices and faces from graph
     std::vector<MPoint> vertices;  
     std::vector<int> faceCounts;  
-    std::vector<int> faceConnects; 
+    std::vector<int> faceConnects;
+    std::vector<int> faceLabels;
 
 
     for (auto &face : faces) {
         faceCounts.push_back(face.first.size());
         faceConnects.insert(faceConnects.end(), face.first.begin(), face.first.end());
+        faceLabels.push_back(face.second);
     }
     for (const glm::vec3& v : verts) {
     vertices.emplace_back(v.x, v.y, v.z);
@@ -147,7 +205,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
     // Clears Maya window
     MGlobal::executeCommand("delete all");
 
-    return createMesh(vertices, faceCounts, faceConnects);
+    return createMesh(vertices, faceCounts, faceConnects, faceLabels);
 
 }
 

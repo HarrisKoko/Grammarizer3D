@@ -21,7 +21,8 @@ public:
     static void* creator();
     MStatus createMesh(const std::vector<MPoint>& vertices,
         const std::vector<int>& faceCounts,
-        const std::vector<int>& faceConnects);
+        const std::vector<int>& faceConnects,
+        const std::vector<int>& shaderIndicies);
 
 };
 

@@ -14,6 +14,7 @@ global proc string readTxtFile(string $filePath) {
 }
 
 global proc openTxtFileBrowser(string $statusLabel) {
+   
     string $filePathArray[] = `fileDialog2 -fileMode 1 -caption "Select a Text File" -fileFilter "Text Files (*.txt)"`;
     if (size($filePathArray) > 0) {
         string $filePath = $filePathArray[0];
@@ -24,6 +25,7 @@ global proc openTxtFileBrowser(string $statusLabel) {
             text -e -label "Failed to load grammar." -backgroundColor 0.5 0 0 $statusLabel;
         }
     }
+     // call LoadGrammarCmd here based on file selected
 }
 
 global proc onCancelPressed() {

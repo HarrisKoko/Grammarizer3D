@@ -1,12 +1,3 @@
-﻿  generateGrammar.cpp
-  generateModels.cpp
-C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\helloMaya\generateModels.cpp(139,45): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\helloMaya\generateModels.cpp(139,45): warning C4267:         with
-C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\helloMaya\generateModels.cpp(139,45): warning C4267:         [
-C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\helloMaya\generateModels.cpp(139,45): warning C4267:             _Ty=int
-C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\helloMaya\generateModels.cpp(139,45): warning C4267:         ]
-  hello_maya.cpp
-C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\helloMaya\hello_maya.cpp(21,19): warning C4018: '<': signed/unsigned mismatch
-  LoadMesh.cpp
-  Generating Code...
+﻿  loadGrammar.cpp
+     Creating library C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\x64\Debug\helloMaya.lib and object C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\x64\Debug\helloMaya.exp
   helloMaya.vcxproj -> C:\Users\Harris\Documents\College\College\CGGT\6600\hw1\helloMaya\x64\Debug\helloMaya.mll

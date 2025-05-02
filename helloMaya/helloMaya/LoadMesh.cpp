@@ -6,6 +6,8 @@ Graph LoadMeshCmd::s_loadedGraph = Graph();
 // Boolean flag to track if the graph has been loaded
 bool LoadMeshCmd::s_hasLoadedGraph = false;
 
+MObjectArray LoadMeshCmd::shaders = MObjectArray();
+
 // Returns the loaded graph
 Graph& LoadMeshCmd::getLoadedGraph() {
     return s_loadedGraph;
@@ -14,6 +16,10 @@ Graph& LoadMeshCmd::getLoadedGraph() {
 // Returns whether a graph has been loaded
 bool LoadMeshCmd::hasLoadedGraph() {
     return s_hasLoadedGraph;
+}
+
+MObjectArray& LoadMeshCmd::getShaders() {
+    return shaders;
 }
 
 
@@ -44,7 +50,8 @@ MStatus LoadMeshCmd::doIt(const MArgList& args) {
         // Get the connected shaders for the current mesh
         //Shaders: list of unique shaders in the mesh
         //shaderIndicies: length of faces in order and stores index to shader
-        meshFn.getConnectedShaders(dagPath.instanceNumber(), this->shaders, this->shaderIndices); //this sets shader indices to the index in shaders for that face
+        MIntArray shaderIndices;
+        meshFn.getConnectedShaders(dagPath.instanceNumber(), shaders, shaderIndices); //this sets shader indices to the index in shaders for that face
 
         for (unsigned int i = 0; i < shaders.length(); ++i) {
             MObject shadingGroup = shaders[i];
