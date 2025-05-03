@@ -125,7 +125,7 @@ public:
     std::vector<Graph> generateHierarchy(int steps) const;
 
 
-    std::vector<glm::vec3> samplePositions(const std::map<unsigned int, glm::vec3>& setValues, double& oError, float minEdgeLength = 1, float maxEdgeLength = 20, float minPosition = -10, float maxPosition = 10, unsigned int maxTries = 50000, float cosMin = 0.9) const;
+    std::vector<glm::vec3> samplePositions(const std::map<unsigned int, glm::vec3>& setValues, double& oError, float minEdgeLength = 1, float maxEdgeLength = 20, float minPosition = -10, float maxPosition = 10, unsigned int maxTries = 30000, float cosMin = 0.95) const;
     // TODO probably store result between iterations and update
 
 

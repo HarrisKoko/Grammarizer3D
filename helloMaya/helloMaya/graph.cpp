@@ -1189,6 +1189,7 @@ std::optional<Graph> Graph::applyRandomReplacementRule(const std::vector<std::pa
     return {};
 }
 
+
 std::vector<Graph> Graph::branchGlue(const Graph &other) const
 {
     // TODO could define splice and use that plus loop glue it sounds like but might be easier doing separate
@@ -1943,6 +1944,9 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
     // TODO maybe just represent as single std::vector<Graph>? only previous tier matters I think since only used to construct next tier; otherwise just have all of them in order probably fine
     std::vector<Graph> tier1;
 
+    std::map<HalfEdgeGraph, std::vector<std::tuple<Graph, unsigned int, unsigned int>>> heToPrims;
+    //std::map<HalfEdgeGraph, std::vector<const Graph&>> heToPrims;
+
     std::vector<Graph> prevTier;
     std::set<HalfEdgeGraph> encounteredHalfEdges;
     for (const Primitive* p : primitives) {
@@ -1991,6 +1995,35 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
             tier1.push_back(g);
             graphsByBoundary.insert({g.getBoundaryGeneric(), g});
             prevTier.push_back(g);
+
+            for (unsigned int j = 0; j < g.boundaryGraphElements.size(); ++j) {
+            //for (const uPtr<BoundaryElem>& e : g.boundaryGraphElements) {
+                const uPtr<BoundaryElem>& e = g.boundaryGraphElements.at(j);
+                //heToPrims[-(e->he.h)].push_back(g);
+                unsigned int edgeIndex;
+                for (unsigned int i = 0; i < p->halfEdges.size(); ++i) {
+                    if (e->he.h == p->halfEdges.at(i)) {
+                        edgeIndex = i;
+                        break;
+                    }
+                }
+                HalfEdgeGraph heInv = -(e->he.h); 
+                // //this^ should work I think? doesn't seem to but seems an issue elsewhere
+                // // it is some issue with indexing though not finding in map so some value not lining up or similar
+                // // alternatively try below approach
+                // my brain can't work well enough rn finish later TODO 2:06am
+                /*HalfEdgeGraph heInv;
+                Primitive* p2 = p->connections.at(edgeIndex);
+                for (unsigned int i = 0; i < p2->halfEdges.size(); ++i) {
+                    if (p2->connections.at(i) == p) {
+                        heInv = p2->halfEdges.at(i);
+                        break;
+                    }
+
+                }*/
+                heToPrims[heInv].push_back({ g, edgeIndex, j });
+            }
+            
         }
         // TODO realize also might need to make rules for primitive to single edge case once single-edge-no-vertex graphs added
         //  NOTE IDK if primitives that are single edges should be occurring in input really but no reason not to make possible I suppose (collinear edge of face)
@@ -2022,38 +2055,110 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
 
         // TODO should add checks to avoid redundancy? general graph isomorphism test I guess should do
         for (const Graph& g : prevTier) {
-            for (const Graph& gPrim : tier1) {
-                std::vector<Graph> branchGlued = g.branchGlue(gPrim);
 
-                for (Graph& newGraph : branchGlued) {
-                    // bool noMatches = true;
-                    // only need to compare current tier since earlier ones all have fewer primitives and hence can't be isomorphic to this
-                    // for (const Graph& existingGraph : newTier) {
-                    //     if (newGraph.sameBoundaryString(existingGraph) && newGraph.isIsomorphicTo(existingGraph)) {
-                    //         noMatches = false;
-                    //         break;
-                    //     }
-                    // }
-                    // if (noMatches) {
-                    //     newTier.push_back(newGraph);
-                    // }
-                    const auto& bound = newGraph.getBoundaryGeneric();
-                    // if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
-                    // auto bound = newGraph.getBoundaryGeneric();
-                    if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
-                        newTier.push_back(newGraph);
-                        // if (bound != newGraph.getBoundaryGeneric()) {
-                        //     std::cout << "AAA" << std::endl;
-                        // }
-                        newGraphsByBoundary.insert({newGraph.getBoundaryGeneric(), (newTier.back())});
+
+            //for (const Graph& gPrim : tier1) {
+            //    std::vector<Graph> branchGlued = g.branchGlue(gPrim);
+
+            //    for (Graph& newGraph : branchGlued) {
+            //        // bool noMatches = true;
+            //        // only need to compare current tier since earlier ones all have fewer primitives and hence can't be isomorphic to this
+            //        // for (const Graph& existingGraph : newTier) {
+            //        //     if (newGraph.sameBoundaryString(existingGraph) && newGraph.isIsomorphicTo(existingGraph)) {
+            //        //         noMatches = false;
+            //        //         break;
+            //        //     }
+            //        // }
+            //        // if (noMatches) {
+            //        //     newTier.push_back(newGraph);
+            //        // }
+            //        const auto& bound = newGraph.getBoundaryGeneric();
+            //        // if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+            //        // auto bound = newGraph.getBoundaryGeneric();
+            //        if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+            //            newTier.push_back(newGraph);
+            //            // if (bound != newGraph.getBoundaryGeneric()) {
+            //            //     std::cout << "AAA" << std::endl;
+            //            // }
+            //            newGraphsByBoundary.insert({newGraph.getBoundaryGeneric(), (newTier.back())});
+            //        }
+            //    }
+            //    // newTier.insert(newTier.end(), branchGlued.begin(), branchGlued.end());
+            //}
+            ////std::vector<Graph> loopGlued = g.loopGlue();
+            std::vector<Graph> glued = g.loopGlue();
+
+            for (unsigned int i = 0; i < g.boundaryGraphElements.size(); ++i) {
+            /*for (const uPtr<BoundaryElem>& e : g.boundaryGraphElements) {*/
+                try {
+                    const uPtr<BoundaryElem>& e = g.boundaryGraphElements.at(i);
+                    for (const auto& [primGraph, heIndex, beIndex] : heToPrims.at(e->he.h)) {
+                        //for (const Graph& prim : heToPrims.at(e->he.h)) {
+                        Graph gluedGraph(g);
+                        Primitive* gPrim = gluedGraph.primitives.at(e->he.primIndex).get();
+                        uPtr<Primitive> newPrim = mkU<Primitive>(*primGraph.primitives.at(0));
+                        newPrim->connections.at(heIndex) = gPrim;
+                        // TODO not great having a loop for this but not sure how I'd store; also not a very long loop
+                        for (unsigned int j = 0; j < gPrim->halfEdges.size(); ++j) {
+                            if (gPrim->halfEdges.at(j) == e->he.h) {
+                                gPrim->connections.at(j) = newPrim.get();
+                                break;
+                            }
+                        }
+
+                        // update boundary graph
+                        // TODO
+                        //BoundaryElem* oE = nullptr;
+                        //unsigned int oE_index;
+                        // TODO
+
+                        unsigned int gBoundarySize = gluedGraph.boundaryGraphElements.size();
+                        unsigned int primBoundarySize = primGraph.boundaryGraphElements.size();
+
+                        for (unsigned int j = 0; j < primBoundarySize; ++j) {
+                            uPtr<BoundaryElem> newElem = mkU<BoundaryElem>(*primGraph.boundaryGraphElements.at(j));
+
+                            newElem->he.primIndex += g.primitives.size();
+                            gluedGraph.boundaryGraphElements.push_back(std::move(newElem));
+
+                        }
+
+                        for (unsigned int j = 0; j < primBoundarySize; ++j) {
+                            BoundaryElem* target = gluedGraph.boundaryGraphElements.at(gBoundarySize + j).get();
+                            BoundaryElem* nextElem = gluedGraph.boundaryGraphElements.at(gBoundarySize + (j + 1) % primBoundarySize).get();
+                            target->next = nextElem;
+                            nextElem->prev = target;
+                        }
+                        unsigned int oE_index = beIndex + gBoundarySize;
+                        BoundaryElem* tE = gluedGraph.boundaryGraphElements.at(i).get();
+                        BoundaryElem* oE = gluedGraph.boundaryGraphElements.at(oE_index).get();
+
+                        tE->prev->next = oE->next;
+                        oE->next->prev = tE->prev;
+                        tE->next->prev = oE->prev;
+                        oE->prev->next = tE->next;
+
+
+                        gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + oE_index);
+                        gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + i);
+
+
+                        gluedGraph.primitives.push_back(std::move(newPrim));
+                        gluedGraph.sortBoundaryGraphElements();
+
+                        glued.push_back(std::move(gluedGraph));
                     }
                 }
-                // newTier.insert(newTier.end(), branchGlued.begin(), branchGlued.end());
+                catch (const std::exception& e) {
+                    std::cerr << "Glue exception" << std::endl;
+                    std::cerr << e.what() << std::endl;
+                }
             }
-            std::vector<Graph> loopGlued = g.loopGlue();
+
             // TODO maybe should use some sort of std::move thing here? dunno best way to
             // newTier.insert(newTier.end(), loopGlued.begin(), loopGlued.end());
-            for (Graph& newGraph : loopGlued) {
+            //for (Graph& newGraph : loopGlued) {
+            for (Graph& newGraph : glued) {
                 // bool noMatches = true;
                 // for (const Graph& existingGraph : newTier) {
                 //     if (newGraph.sameBoundaryString(existingGraph) && newGraph.isIsomorphicTo(existingGraph)) {
