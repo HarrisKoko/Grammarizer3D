@@ -34,3 +34,11 @@
 /helloMaya/x64/Debug/helloMaya.lib
 /helloMaya/x64/Debug/helloMaya.mll
 /helloMaya/x64/Debug/helloMaya.pdb
+# Ignore Visual Studio files
+*.vcxproj
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/

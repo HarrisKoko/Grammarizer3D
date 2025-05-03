@@ -18,6 +18,7 @@ MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
     const std::vector<int>& shaderIndices)
 {
     MStatus status;
+    MGlobal::displayInfo("Before mesh creation");
 
     // Convert to MPointArray and MIntArray
     MPointArray mPoints;
@@ -62,6 +63,12 @@ MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
         return MS::kSuccess;
     }
 
+    // Log shader list for debugging
+    MGlobal::displayInfo("Shader List Length: " + MString() + shaderList.length());
+    for (unsigned int i = 0; i < shaderList.length(); ++i) {
+        MGlobal::displayInfo("Shader " + MString() + i + ": " + shaderList[i].apiTypeStr());
+    }
+
     // Get the DAG path to the mesh
     MDagPath meshPath;
     status = MDagPath::getAPathTo(meshObj, meshPath);
@@ -75,19 +82,25 @@ MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
         int shaderIdx = shaderIndices[faceIdx];
 
         if (shaderIdx < 0 || shaderIdx >= static_cast<int>(shaderList.length())) {
+            MGlobal::displayWarning("Invalid shader index for face " + MString() + faceIdx);
             continue;
         }
 
         MObject shadingGroup = shaderList[shaderIdx];
         MFnSet shadingSet(shadingGroup, &status);
         if (!status) {
-            MGlobal::displayWarning("Invalid shading group.");
+            MGlobal::displayWarning("Invalid shading group for face " + MString() + faceIdx);
             continue;
         }
 
         // Create a face component
         MFnSingleIndexedComponent compFn;
         MObject compObj = compFn.create(MFn::kMeshPolygonComponent, &status);
+        if (!status) {
+            MGlobal::displayWarning("Failed to create component for face " + MString() + faceIdx);
+            continue;
+        }
+
         compFn.addElement(faceIdx);
 
         // Add member using MDagPath + component
@@ -104,11 +117,12 @@ MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
 
 
 
+
 MStatus GenerateModelsCmd::doIt(const MArgList& args) {
+    MGlobal::displayInfo("start do it");
     if (!LoadMeshCmd::hasLoadedGraph()) {
         return MS::kFailure;
     }
-
     Graph& graph = LoadMeshCmd::getLoadedGraph();
 
     //std::vector<glm::vec3> verts = graph.getCachedPositions();
@@ -116,6 +130,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
     
     std::map<unsigned int, glm::vec3> s;
     double d;
+    MGlobal::displayInfo("Before sample positions");
     std::vector<glm::vec3> verts = graph.samplePositions(s, d);
     std::vector<std::pair<std::vector<int>, int>> faces;
 
@@ -129,7 +144,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
         primIndex.insert({ p, i });
     }
 
-
+    MGlobal::displayInfo("Before for loop");
     std::set<std::pair<Primitive*, HalfEdgeGraph>> explored;
     for (unsigned int i = 0; i < graph.primitives.size(); ++i) {
         Primitive* startP = graph.primitives.at(i).get();
@@ -144,6 +159,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
                 //negative -> counterclockwise direction -> outwards
                 Primitive* curP = startP;
                 Primitive* nextP = curP->connections.at(j);
+                MGlobal::displayInfo("Before Face searching");
                 do {
                     explored.insert({ curP, curHE });
                     // explored.insert({{curP, curHE},true});
@@ -181,10 +197,6 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
     }
 
 
-
-
-
-
     // Get vertices and faces from graph
     std::vector<MPoint> vertices;  
     std::vector<int> faceCounts;  
@@ -210,5 +222,6 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
 }
 
 void* GenerateModelsCmd::creator() {
+    MGlobal::displayInfo("Created CMD");
     return new GenerateModelsCmd();
 }

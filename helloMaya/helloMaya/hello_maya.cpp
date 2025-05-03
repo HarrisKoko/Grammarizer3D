@@ -4,6 +4,7 @@
 #include "generateGrammar.h"
 #include "generateModels.h"
 #include "loadGrammar.h"
+#include "exportGrammar.h"
 // define EXPORT for exporting dll functions
 #define EXPORT _declspec(dllexport)
 // Maya Plugin creator function
@@ -44,8 +45,10 @@ EXPORT MStatus initializePlugin(MObject obj)
 	status = plugin.registerCommand("helloMaya", helloMaya::creator);
 	status = plugin.registerCommand("LoadMeshCmd", LoadMeshCmd::creator);
 	status = plugin.registerCommand("GenerateGrammarCmd", GenerateGrammarCmd::creator);
+	status = plugin.registerCommand("GenerateGrammarCmd", GenerateGrammarCmd::creator, GenerateGrammarCmd::newSyntax);
 	status = plugin.registerCommand("GenerateModelsCmd", GenerateModelsCmd::creator);
 	status = plugin.registerCommand("LoadGrammarCmd", LoadGrammarCmd::creator);
+	status = plugin.registerCommand("ExportGrammarCmd", ExportGrammarCmd::creator);
 
 	if (!status) {
 		status.perror("registerCommand failed");
@@ -75,6 +78,7 @@ EXPORT MStatus uninitializePlugin(MObject obj)
 	status = plugin.deregisterCommand("GenerateGrammarCmd");
 	status = plugin.deregisterCommand("GenerateModelsCmd");
 	status = plugin.deregisterCommand("LoadGrammarCmd");
+	status = plugin.deregisterCommand("ExportGrammarCmd");
 
 	if (!status)
 		status.perror("deregisterCommand failed");

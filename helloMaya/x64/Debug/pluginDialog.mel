@@ -1,4 +1,5 @@
 global string $iterSlide;
+global string $rulesSlider;
 global string $outputCountSlide;
 global string $minEdgeLengthSlide;
 global string $maxEdgeLengthSlide;
@@ -56,18 +57,32 @@ global proc exportGrammar() {
 
 global proc generateGrammar() {
     print("Calling GenerateGrammarCmd...\n");
+
+    // Get the values from the sliders
+    global string $iterSlide;
+    global string $rulesSlide;
+    int $iterationsValue = `intSliderGrp -q -value $iterSlide`;
+    int $rulesValue = `intSliderGrp -q -value $rulesSlide`;
+
+    // Print the values to the console for verification
+    print("Slider value for iterations: " + $iterationsValue + "\n");
+    print("Slider value for rules: " + $rulesValue + "\n");
+
+    // Call the C++ command with the arguments
     string $result;
-    int $status = catch($result = `GenerateGrammarCmd`);
+    int $status = catch(`GenerateGrammarCmd $rulesValue $iterationsValue`);
 
     global string $statusLabel2;
     if ($status != 0) {
         print("GenerateGrammarCmd failed.\n");
         text -e -label "Failed to generate grammar." -backgroundColor 0.5 0 0 $statusLabel2;
     } else {
-        print("GenerateGrammarCmd result: " + $result + "\n");
+        print("GenerateGrammarCmd succeeded.\n");
         text -e -label "Grammar generated successfully." -backgroundColor 0 0.5 0 $statusLabel2;
     }
 }
+
+
 
 global proc generateModels(){
     print("Calling GenerateModelsCmd...\n");
@@ -102,6 +117,15 @@ global proc showMyWindow() {
         -backgroundColor 0.5 0.5 0.5
         -height 25 -align "center"`;
 
+
+    global string $rulesSlide;
+    $rulesSlide = `intSliderGrp -label "Rules" -field true
+        -minValue 1 -maxValue 15 -value 1`;
+    global string $iterSlide;
+    $iterSlide = `intSliderGrp -label "Iterations" -field true
+        -minValue 1 -maxValue 10 -value 1`;
+        
+
     button -label "Generate Grammar" -command "generateGrammar()" -ann "Generate a grammar from the selected object.";
     global string $statusLabel2;
     $statusLabel2 = `text -label "Generate a grammar from selected mesh"
@@ -126,10 +150,6 @@ global proc showMyWindow() {
     // Generation Parameters
     frameLayout -label "Generation Settings" -collapsable true;
     columnLayout -adjustableColumn true;
-
-    global string $iterSlide;
-    $iterSlide = `intSliderGrp -label "Iterations" -field true
-        -minValue 1 -maxValue 10 -value 1`;
 
     global string $outputCountSlide;
     $outputCountSlide = `intSliderGrp -label "Output Count" -field true
