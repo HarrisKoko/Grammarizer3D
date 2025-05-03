@@ -7,9 +7,8 @@ MStatus GenerateGrammarCmd::doIt(const MArgList& args) {
         return MS::kFailure;
     }
 
-    Graph& graph = LoadMeshCmd::getLoadedGraph(); // assumes copy constructor works. if issues, try making without.
+    Graph& graph = LoadMeshCmd::getLoadedGraph(); 
     
-    // Insert code here for grammar generation (saves to graph static variable)
     this->rules = graph.generateRules(8);
     Graph blank = Graph();
     auto opt = blank.applyRandomReplacementRule(rules,false);
