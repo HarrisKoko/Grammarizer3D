@@ -7,27 +7,20 @@ global string $statusLabel1;
 global string $statusLabel2;
 global string $statusLabel3;
 
-global proc string readTxtFile(string $filePath) {
-    int $fid = `fopen $filePath "r"`;
-    string $fileContents = `fread $fid ""`;
-    fclose $fid;
-    return $fileContents;
-}
-
 global proc openTxtFileBrowser(string $statusLabel) {
-   
-    string $filePathArray[] = `fileDialog2 -fileMode 1 -caption "Select a Text File" -fileFilter "Text Files (*.txt)"`;
+    string $filePathArray[] = `fileDialog2 -fileMode 1 -caption "Select a Json File" -fileFilter "Json Files (*.json)"`;
     if (size($filePathArray) > 0) {
         string $filePath = $filePathArray[0];
-        string $fileContents = readTxtFile($filePath);
-        if (size($fileContents) > 0) {
+        string $result;
+        int $status = catch($result = `LoadGrammarCmd $filePath`);
+        if ($status == 0) {
             text -e -label "Grammar successfully loaded." -backgroundColor 0 0.5 0 $statusLabel;
         } else {
             text -e -label "Failed to load grammar." -backgroundColor 0.5 0 0 $statusLabel;
         }
     }
-     // call LoadGrammarCmd here based on file selected
 }
+
 
 global proc onCancelPressed() {
     if (`window -exists myWindow`) {
@@ -51,8 +44,25 @@ global proc loadObject() {
 }
 
 global proc exportGrammar() {
-    // Placeholder
-    print("ExportGrammar command here.\n");
+    // Open a file save dialog to get folder and file name
+    string $filePathArray[] = `fileDialog2 
+        -fileMode 0 
+        -caption "Save Grammar File"
+        -fileFilter "JSON Files (*.json)"`;
+
+    if (size($filePathArray) > 0) {
+        string $filePath = $filePathArray[0];
+
+        // Call the C++ command ExportGrammarCmd with the selected path
+        string $result;
+        int $status = catch($result = `ExportGrammarCmd $filePath`);
+
+        if ($status == 0) {
+            print("Grammar exported to: " + $filePath + "\n");
+        } else {
+            warning("Failed to export grammar to: " + $filePath);
+        }
+    }
 }
 
 global proc generateGrammar() {
