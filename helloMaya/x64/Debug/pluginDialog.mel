@@ -130,7 +130,7 @@ global proc showMyWindow() {
 
     global string $rulesSlide;
     $rulesSlide = `intSliderGrp -label "Rules" -field true
-        -minValue 1 -maxValue 15 -value 1`;
+        -minValue 1 -maxValue 20 -value 1`;
     global string $iterSlide;
     $iterSlide = `intSliderGrp -label "Iterations" -field true
         -minValue 1 -maxValue 10 -value 1`;

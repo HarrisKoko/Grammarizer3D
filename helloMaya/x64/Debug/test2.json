@@ -1,0 +1,1616 @@
+{
+    "rules": [
+        [
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "connections": [
+                            0,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 1
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 0
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 1,
+                        "prev": 1
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 0
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "connections": [
+                            -1,
+                            0
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "connections": [
+                            0,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    -1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 1
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 0
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 1
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 0,
+                        "prev": 0
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "connections": [
+                            0,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "connections": [
+                            0,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    -1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            -1,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "boundaryGraphElements": [
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 1
+                        },
+                        "next": 1,
+                        "prev": 2
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 2,
+                        "prev": 0
+                    },
+                    {
+                        "he": {
+                            "h": {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            "primIndex": 0
+                        },
+                        "next": 0,
+                        "prev": 1
+                    }
+                ],
+                "isSingleEdge": false,
+                "primitives": [
+                    {
+                        "connections": [
+                            1,
+                            -1,
+                            -1
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    1,
+                                    0,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": -1.5707963705062866,
+                                "faceNormals": [
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "connections": [
+                            -1,
+                            0
+                        ],
+                        "halfEdges": [
+                            {
+                                "angle": -3.1415927410125732,
+                                "faceNormals": [
+                                    0,
+                                    -1,
+                                    0,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            },
+                            {
+                                "angle": 0,
+                                "faceNormals": [
+                                    0,
+                                    0,
+                                    1,
+                                    0,
+                                    -1,
+                                    0
+                                ],
+                                "faces": [
+                                    0,
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    ]
+}

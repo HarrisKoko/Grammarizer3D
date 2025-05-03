@@ -18,6 +18,7 @@ MStatus GenerateGrammarCmd::doIt(const MArgList& args) {
     int num_iters = 1;
     if (args.length() >= 1) {
         MGlobal::displayInfo("Arg 0 (rules): " + MString() + args.asInt(0));
+        num_rules = args.asInt(0);
     }
     if (args.length() >= 2) {
         MGlobal::displayInfo("Arg 1 (iters): " + MString() + args.asInt(1));

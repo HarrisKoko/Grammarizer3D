@@ -1,11 +1,8 @@
 **/eigen-3.4.0/
 **/Clp-releases.1.17.10-x86_64-w64-mingw64/
 **/.vs/
-**/helloMaya.sln
-/helloMaya/helloMaya/helloMaya.vcxproj
 /helloMaya/helloMaya/x64/
 **/helloMaya.mll
-**/helloMaya.vcxproj
 /helloMaya/helloMaya/x64/Debug/generateGrammar.obj
 /helloMaya/helloMaya/x64/Debug/generateModels.obj
 /helloMaya/helloMaya/x64/Debug/graph.obj
@@ -29,13 +26,11 @@
 /helloMaya/helloMaya/x64/Debug/utils.obj
 /helloMaya/helloMaya/x64/Debug/vc143.idb
 /helloMaya/helloMaya/x64/Debug/vc143.pdb
-/helloMaya/helloMaya/helloMaya.vcxproj
 /helloMaya/x64/Debug/helloMaya.exp
 /helloMaya/x64/Debug/helloMaya.lib
 /helloMaya/x64/Debug/helloMaya.mll
 /helloMaya/x64/Debug/helloMaya.pdb
 # Ignore Visual Studio files
-*.vcxproj
 *.vcxproj.user
 *.suo
 *.user
