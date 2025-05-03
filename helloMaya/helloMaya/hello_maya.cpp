@@ -45,6 +45,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 	status = plugin.registerCommand("helloMaya", helloMaya::creator);
 	status = plugin.registerCommand("LoadMeshCmd", LoadMeshCmd::creator);
 	status = plugin.registerCommand("GenerateGrammarCmd", GenerateGrammarCmd::creator);
+	status = plugin.registerCommand("GenerateGrammarCmd", GenerateGrammarCmd::creator, GenerateGrammarCmd::newSyntax);
 	status = plugin.registerCommand("GenerateModelsCmd", GenerateModelsCmd::creator);
 	status = plugin.registerCommand("LoadGrammarCmd", LoadGrammarCmd::creator);
 	status = plugin.registerCommand("ExportGrammarCmd", ExportGrammarCmd::creator);

@@ -58,28 +58,30 @@ global proc exportGrammar() {
 global proc generateGrammar() {
     print("Calling GenerateGrammarCmd...\n");
 
-    // Get the value of the slider
+    // Get the values from the sliders
     global string $iterSlide;
-    int $iters = `intSliderGrp -q -value $iterSlide`;
-    global string $rulesSlider;
-    int $iters = `intSliderGrp -q -value $iterSlide`;
+    global string $rulesSlide;
+    int $iterationsValue = `intSliderGrp -q -value $iterSlide`;
+    int $rulesValue = `intSliderGrp -q -value $rulesSlide`;
 
+    // Print the values to the console for verification
+    print("Slider value for iterations: " + $iterationsValue + "\n");
+    print("Slider value for rules: " + $rulesValue + "\n");
 
-    // Print the value of the slider to the console
-    print("Slider value for iterations: " + $iters + "\n");
-
+    // Call the C++ command with the arguments
     string $result;
-    int $status = catch($result = `GenerateGrammarCmd $rulesValue $iterationsValue`);
-    
+    int $status = catch(`GenerateGrammarCmd $rulesValue $iterationsValue`);
+
     global string $statusLabel2;
     if ($status != 0) {
         print("GenerateGrammarCmd failed.\n");
         text -e -label "Failed to generate grammar." -backgroundColor 0.5 0 0 $statusLabel2;
     } else {
-        print("GenerateGrammarCmd result: " + $result + "\n");
+        print("GenerateGrammarCmd succeeded.\n");
         text -e -label "Grammar generated successfully." -backgroundColor 0 0.5 0 $statusLabel2;
     }
 }
+
 
 
 global proc generateModels(){

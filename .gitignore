@@ -5,3 +5,11 @@
 /helloMaya/helloMaya/helloMaya.vcxproj
 /helloMaya/helloMaya/x64/
 **/helloMaya.mll
+# Ignore Visual Studio files
+*.vcxproj
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
