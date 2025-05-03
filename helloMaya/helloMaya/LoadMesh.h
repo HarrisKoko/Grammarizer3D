@@ -28,6 +28,7 @@ public:
     static Graph& getLoadedGraph();
     static bool hasLoadedGraph();
     static MObjectArray& getShaders();
+    static void setLoadedGraph(Graph g);
 
 private:
     static Graph s_loadedGraph;

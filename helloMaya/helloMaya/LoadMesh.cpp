@@ -13,6 +13,10 @@ Graph& LoadMeshCmd::getLoadedGraph() {
     return s_loadedGraph;
 }
 
+void LoadMeshCmd::setLoadedGraph(Graph g) {
+    s_loadedGraph = g;
+}
+
 // Returns whether a graph has been loaded
 bool LoadMeshCmd::hasLoadedGraph() {
     return s_hasLoadedGraph;

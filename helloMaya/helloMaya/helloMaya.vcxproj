@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="exportGrammar.h" />
     <ClInclude Include="generateGrammar.h" />
     <ClInclude Include="generateModels.h" />
     <ClInclude Include="graph.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="exportGrammar.cpp" />
     <ClCompile Include="generateGrammar.cpp" />
     <ClCompile Include="generateModels.cpp" />
     <ClCompile Include="graph.cpp" />

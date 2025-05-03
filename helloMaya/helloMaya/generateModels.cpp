@@ -181,10 +181,6 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
     }
 
 
-
-
-
-
     // Get vertices and faces from graph
     std::vector<MPoint> vertices;  
     std::vector<int> faceCounts;  
