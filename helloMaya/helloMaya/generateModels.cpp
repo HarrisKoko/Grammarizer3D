@@ -12,6 +12,9 @@
 #include <maya/MItDag.h>
 #include <maya/MFnComponentListData.h>
 
+
+
+
 MStatus GenerateModelsCmd::createMesh(const std::vector<MPoint>& vertices,
     const std::vector<int>& faceCounts,
     const std::vector<int>& faceConnects,
@@ -175,10 +178,157 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
                             curHE.faceNormals.at(0) == nextP->halfEdges.at(k).faceNormals.at(0)) {
                             // on same plane in same rotational direction
                             // but might not necessarily be next step since could have multiple HEs on this plane; hence sort in set by angle
-                            potentialNext.insert({ nextP->halfEdges.at(k).angle, k });
+
+
+                            //awkward and probably some way to simplify but just doing:
+                            // convert angle back to direction
+                            // convert to angle within plane with face normal (0) (rather than normal with lowest valued xyz)
+                            glm::vec3 direction(cos(nextP->halfEdges.at(k).angle), 0.0f, sin(nextP->halfEdges.at(k).angle));
+                            glm::vec3 forward = glm::vec3(0, 1, 0);
+                            glm::vec3 normal;
+                            auto& norms = nextP->halfEdges.at(k).faceNormals;
+                            if (norms.at(0).x == norms.at(1).x) {
+                                if (norms.at(0).y == norms.at(1).y) {
+                                    if (norms.at(0).z == norms.at(1).z) {
+                                        normal = norms.at(0);
+
+                                    }
+                                    else {
+                                        normal = (norms.at(0).z < norms.at(1).z) ? norms.at(0) : norms.at(1);
+                                    }
+                                }
+                                else {
+                                    normal = (norms.at(0).y < norms.at(1).y) ? norms.at(0) : norms.at(1);
+                                }
+                            }
+                            else {
+                                normal = (norms.at(0).x < norms.at(1).x) ? norms.at(0) : norms.at(1);
+                            }
+
+                            glm::vec3 turnDirection = glm::cross(normal, forward);
+                            if (turnDirection != glm::vec3(0)) {
+                                float turnAngle = glm::acos(glm::dot(normal, forward));
+
+                                glm::mat4 rotation = glm::rotate(-turnAngle, turnDirection);
+
+                                direction = glm::vec3(rotation * glm::vec4(direction, 1));
+
+                            }
+
+
+                            normal = nextP->halfEdges.at(k).faceNormals.at(0);
+                            turnDirection = glm::cross(normal, forward);
+                            if (turnDirection != glm::vec3(0)) {
+                                float turnAngle = glm::acos(glm::dot(normal, forward));
+
+                                glm::mat4 rotation = glm::rotate(turnAngle, turnDirection);
+
+                                direction = glm::vec3(rotation * glm::vec4(direction, 1));
+                            }
+                            float theta = (direction.z > 0) ? glm::acos(direction.x) : -glm::acos(direction.x);
+
+
+                            potentialNext.insert({ theta, k });
                         }
                     }
-                    std::pair<float, int> nextSel = *potentialNext.begin();
+                    if (potentialNext.size() == 0) {
+                        break; // shouldn't happen but just in case?
+                    }
+
+                    float invAngle;
+                    {
+                        glm::vec3 direction(cos(curHE.angle), 0.0f, sin(curHE.angle));
+                        glm::vec3 forward = glm::vec3(0, 1, 0);
+                        glm::vec3 normal;
+                        auto& norms = curHE.faceNormals;
+                        if (norms.at(0).x == norms.at(1).x) {
+                            if (norms.at(0).y == norms.at(1).y) {
+                                if (norms.at(0).z == norms.at(1).z) {
+                                    normal = norms.at(0);
+
+                                }
+                                else {
+                                    normal = (norms.at(0).z < norms.at(1).z) ? norms.at(0) : norms.at(1);
+                                }
+                            }
+                            else {
+                                normal = (norms.at(0).y < norms.at(1).y) ? norms.at(0) : norms.at(1);
+                            }
+                        }
+                        else {
+                            normal = (norms.at(0).x < norms.at(1).x) ? norms.at(0) : norms.at(1);
+                        }
+
+                        glm::vec3 turnDirection = glm::cross(normal, forward);
+                        if (turnDirection != glm::vec3(0)) {
+                            float turnAngle = glm::acos(glm::dot(normal, forward));
+
+                            glm::mat4 rotation = glm::rotate(-turnAngle, turnDirection);
+
+                            direction = glm::vec3(rotation * glm::vec4(direction, 1));
+
+                        }
+
+
+                        normal = curHE.faceNormals.at(0);
+                        turnDirection = glm::cross(normal, forward);
+                        if (turnDirection != glm::vec3(0)) {
+                            float turnAngle = glm::acos(glm::dot(normal, forward));
+
+                            glm::mat4 rotation = glm::rotate(turnAngle, turnDirection);
+
+                            direction = glm::vec3(rotation * glm::vec4(direction, 1));
+                        }
+                        float theta = (direction.z > 0) ? glm::acos(direction.x) : -glm::acos(direction.x);
+
+                        if (theta < 0) {
+                            invAngle = theta + M_PI;
+                        }
+                        else {
+                            invAngle = theta - M_PI;
+                        }
+                        
+                    }
+                    
+
+                    /*potentialNext.rend();
+                    for (auto it = potentialNext.rbegin(); it != potentialNext.rend(); ++it) {
+                        std::pair<float, int> p = *it;
+                    }*/
+                        
+                    //std::pair<float, int> nextSel = *(potentialNext.begin());
+                    std::pair<float, int> nextSel = *std::prev(potentialNext.end());
+                    // I BELIEVE this is what to do:
+                    // pick greatest angle which is less than invAngle
+                    // if none less than, pick the greatest overall
+                    // so should pick the next one around clockwise
+                    // I THINK the rotation might be reversed from what I'm expecting w/ y-axis being inverted from how I'm imagining?
+                    // so do I want to go a different order then? inverse of that 
+
+                    // TODO might be I need to go off of face [0] instead of [1]? not sure if makes a difference but if it is reversed fromw hat I think maybe do that
+                    for (std::pair<float, int> p : potentialNext) {
+                        /*if (invAngle + ANGLE_EPSILON < p.first) {
+                            nextSel = p;
+                            break;
+                        }*/
+
+                        if (p.first + ANGLE_EPSILON < invAngle) {
+                            //if (p.first + ANGLE_EPSILON < invAngle) {
+                            nextSel = p;
+                        } else {
+                            break;
+                        }
+
+                        //if ((p.first > M_PI - ANGLE_EPSILON * 2 && invAngle < 0) ? glm::epsilonEqual(p.first - float(M_PI) * 2, invAngle, ANGLE_EPSILON) :
+                        //    ((invAngle > M_PI - ANGLE_EPSILON * 2 && p.first < 0) ? glm::epsilonEqual(p.first, invAngle - float(M_PI) * 2, ANGLE_EPSILON) :
+                        //        glm::epsilonEqual(p.first, invAngle, ANGLE_EPSILON))) {
+                        ////if (glm::epsilonEqual(p.first, invAngle, ANGLE_EPSILON)) {
+                        //    break;
+                        //}
+                        //else {
+                        //    nextSel = p;
+                        //}
+                    }
                     curP = nextP;
                     nextP = curP->connections.at(nextSel.second);
                     curHE = curP->halfEdges.at(nextSel.second);

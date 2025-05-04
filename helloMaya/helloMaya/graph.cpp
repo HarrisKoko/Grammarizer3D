@@ -194,10 +194,16 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
                 glm::mat4 rotation = glm::rotate(turnAngle, turnDirection);
 
                 dir = glm::vec3(rotation * glm::vec4(dir, 1));
-            } else if (glm::dot(normal, forward) < 0) {
+            //} else if (glm::dot(normal, forward) < 0) {
                 // dir.x = -dir.x; // TODO not sure if that's totally right
             }
             float theta = (dir.z > 0) ? glm::acos(dir.x) : -glm::acos(dir.x);
+
+            // rounding before so can use map method more reliably
+            if (theta > 3.141) {
+                theta -= 2 * M_PI;
+            }
+            theta = std::round(theta * 180.f) / 180.f;
             // ^TODO probably make dir.y and have this take in 2d vec? or generaliaze to something like vector for angle and leave in 3d
             // TODO maybe flip around which way is negative to match paper diagrams better (since -z is up on our display rn) but fine as is as long as consistent
             p->halfEdges.push_back(HalfEdgeGraph(theta, {{std::get<1>(adjData), std::get<2>(adjData)}}, {{std::get<3>(adjData), std::get<4>(adjData)}}));
@@ -2001,13 +2007,18 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                 const uPtr<BoundaryElem>& e = g.boundaryGraphElements.at(j);
                 //heToPrims[-(e->he.h)].push_back(g);
                 unsigned int edgeIndex;
-                for (unsigned int i = 0; i < p->halfEdges.size(); ++i) {
-                    if (e->he.h == p->halfEdges.at(i)) {
+
+                for (unsigned int i = 0; i < g.primitives.at(0)->halfEdges.size(); ++i) {
+                    if (e->he.h == g.primitives.at(0)->halfEdges.at(i)) {
                         edgeIndex = i;
                         break;
+                // TODO I THINK THIS IS WRONGLY SET
+                        // TODO actually is j just always the same as edgeIndex is supposed to be?
+                        // I don't actually see why it's wrongly set but yeah maybe can just use j
+                        // nevermind j is wrong. not sure what my original issue with this was
                     }
                 }
-                HalfEdgeGraph heInv = -(e->he.h); 
+                HalfEdgeGraph heInv2 = -(e->he.h); 
                 // //this^ should work I think? doesn't seem to but seems an issue elsewhere
                 // // it is some issue with indexing though not finding in map so some value not lining up or similar
                 // // alternatively try below approach
@@ -2020,8 +2031,12 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
                         break;
                     }
 
+                }
+
+                if (heInv != heInv2) {
+                    std::cout << "nonmatching inv" << std::endl;
                 }*/
-                heToPrims[heInv].push_back({ g, edgeIndex, j });
+                heToPrims[heInv2].push_back({ g, edgeIndex, j });
             }
             
         }
@@ -2049,7 +2064,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
 
     // TODO figure out end conditions
     // std::vector<Graph> prevTier = tier1;
-    for (unsigned int i = 0; i < maxSteps; ++i) {
+    for (unsigned int iter = 0; iter < maxSteps; ++iter) {
         std::vector<Graph> newTier;
         std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph> newGraphsByBoundary{};
 
@@ -2092,61 +2107,66 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
             /*for (const uPtr<BoundaryElem>& e : g.boundaryGraphElements) {*/
                 try {
                     const uPtr<BoundaryElem>& e = g.boundaryGraphElements.at(i);
-                    for (const auto& [primGraph, heIndex, beIndex] : heToPrims.at(e->he.h)) {
-                        //for (const Graph& prim : heToPrims.at(e->he.h)) {
-                        Graph gluedGraph(g);
-                        Primitive* gPrim = gluedGraph.primitives.at(e->he.primIndex).get();
-                        uPtr<Primitive> newPrim = mkU<Primitive>(*primGraph.primitives.at(0));
-                        newPrim->connections.at(heIndex) = gPrim;
-                        // TODO not great having a loop for this but not sure how I'd store; also not a very long loop
-                        for (unsigned int j = 0; j < gPrim->halfEdges.size(); ++j) {
-                            if (gPrim->halfEdges.at(j) == e->he.h) {
-                                gPrim->connections.at(j) = newPrim.get();
-                                break;
+                    if (heToPrims.contains(e->he.h)) {
+                        for (const auto& [primGraph, heIndex, beIndex] : heToPrims.at(e->he.h)) {
+                            //for (const Graph& prim : heToPrims.at(e->he.h)) {
+                            Graph gluedGraph(g);
+                            Primitive* gPrim = gluedGraph.primitives.at(e->he.primIndex).get();
+                            uPtr<Primitive> newPrim = mkU<Primitive>(*primGraph.primitives.at(0));
+                            newPrim->connections.at(heIndex) = gPrim;
+                            // TODO not great having a loop for this but not sure how I'd store; also not a very long loop
+                            for (unsigned int j = 0; j < gPrim->halfEdges.size(); ++j) {
+                                if (gPrim->halfEdges.at(j) == e->he.h) {
+                                    gPrim->connections.at(j) = newPrim.get();
+                                    break;
+                                }
                             }
+
+                            // update boundary graph
+                            // TODO
+                            //BoundaryElem* oE = nullptr;
+                            //unsigned int oE_index;
+                            // TODO
+
+                            unsigned int gBoundarySize = gluedGraph.boundaryGraphElements.size();
+                            unsigned int primBoundarySize = primGraph.boundaryGraphElements.size();
+
+                            for (unsigned int j = 0; j < primBoundarySize; ++j) {
+                                uPtr<BoundaryElem> newElem = mkU<BoundaryElem>(*primGraph.boundaryGraphElements.at(j));
+
+                                newElem->he.primIndex += g.primitives.size();
+                                gluedGraph.boundaryGraphElements.push_back(std::move(newElem));
+
+                            }
+
+                            for (unsigned int j = 0; j < primBoundarySize; ++j) {
+                                BoundaryElem* target = gluedGraph.boundaryGraphElements.at(gBoundarySize + j).get();
+                                BoundaryElem* nextElem = gluedGraph.boundaryGraphElements.at(gBoundarySize + (j + 1) % primBoundarySize).get();
+                                target->next = nextElem;
+                                nextElem->prev = target;
+                            }
+                            unsigned int oE_index = beIndex + gBoundarySize;
+                            BoundaryElem* tE = gluedGraph.boundaryGraphElements.at(i).get();
+                            BoundaryElem* oE = gluedGraph.boundaryGraphElements.at(oE_index).get();
+
+                            tE->prev->next = oE->next;
+                            oE->next->prev = tE->prev;
+                            tE->next->prev = oE->prev;
+                            oE->prev->next = tE->next;
+
+
+                            gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + oE_index);
+                            gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + i);
+
+
+                            gluedGraph.primitives.push_back(std::move(newPrim));
+                            gluedGraph.sortBoundaryGraphElements();
+
+                            glued.push_back(std::move(gluedGraph));
                         }
-
-                        // update boundary graph
-                        // TODO
-                        //BoundaryElem* oE = nullptr;
-                        //unsigned int oE_index;
-                        // TODO
-
-                        unsigned int gBoundarySize = gluedGraph.boundaryGraphElements.size();
-                        unsigned int primBoundarySize = primGraph.boundaryGraphElements.size();
-
-                        for (unsigned int j = 0; j < primBoundarySize; ++j) {
-                            uPtr<BoundaryElem> newElem = mkU<BoundaryElem>(*primGraph.boundaryGraphElements.at(j));
-
-                            newElem->he.primIndex += g.primitives.size();
-                            gluedGraph.boundaryGraphElements.push_back(std::move(newElem));
-
-                        }
-
-                        for (unsigned int j = 0; j < primBoundarySize; ++j) {
-                            BoundaryElem* target = gluedGraph.boundaryGraphElements.at(gBoundarySize + j).get();
-                            BoundaryElem* nextElem = gluedGraph.boundaryGraphElements.at(gBoundarySize + (j + 1) % primBoundarySize).get();
-                            target->next = nextElem;
-                            nextElem->prev = target;
-                        }
-                        unsigned int oE_index = beIndex + gBoundarySize;
-                        BoundaryElem* tE = gluedGraph.boundaryGraphElements.at(i).get();
-                        BoundaryElem* oE = gluedGraph.boundaryGraphElements.at(oE_index).get();
-
-                        tE->prev->next = oE->next;
-                        oE->next->prev = tE->prev;
-                        tE->next->prev = oE->prev;
-                        oE->prev->next = tE->next;
-
-
-                        gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + oE_index);
-                        gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + i);
-
-
-                        gluedGraph.primitives.push_back(std::move(newPrim));
-                        gluedGraph.sortBoundaryGraphElements();
-
-                        glued.push_back(std::move(gluedGraph));
+                    }
+                    else {
+                        std::cerr << g.boundaryGraphElements.at(i)->he.h.angle << std::endl;
                     }
                 }
                 catch (const std::exception& e) {
@@ -2259,7 +2279,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
 
                             // Graph g = graphsByBoundary.at(bound);
                             // std::cout << newGraph.isIsomorphicTo(graphsByBoundary.at(bound)) << std::endl;
-                            std::cout << "Repeated element in tier " << i << std::endl;
+                            std::cout << "Repeated element in tier " << iter << std::endl;
                         } else {
                             double err;
                             std::map<unsigned int,glm::vec3> emptyPositionMap;
