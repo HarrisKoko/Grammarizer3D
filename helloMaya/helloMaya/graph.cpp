@@ -1934,11 +1934,313 @@ const std::vector<std::vector<HalfEdgeGraph> > &Graph::getBoundaryGeneric() cons
 
 // #include <unordered_map>
 #define outputProgress 0
-#define INCLUDE_SINGLE_EDGE 0
+#define INCLUDE_SINGLE_EDGE 1
 // TODO I'm not sure if all of the boundary strings are maintained totally correctly or not. looking at graphs used in rules there's some that intuitively seem like they don't match to me but I'm not sure if they actually do or not. hard to tell what counts as what turn visually personally
 //  nevermind I think the case I was worried about is right; did it out on paper and seems correct
 std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Primitive *> &primitives,  std::vector<glm::vec3> faceColors, unsigned int maxSteps)
 {
+
+
+#if 1
+    std::vector<std::pair<Graph, Graph>> result;
+
+    // std::vector<std::vector<Graph>> hierarchy;
+    // std::vector<Graph> hierarchy;
+
+    std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph> graphsByBoundary{};
+    // std::unordered_map<std::vector<std::vector<HalfEdgeGraph>>, Graph> graphsByBoundary{};
+
+    // TODO maybe just represent as single std::vector<Graph>? only previous tier matters I think since only used to construct next tier; otherwise just have all of them in order probably fine
+    std::vector<Graph> tier1;
+
+    std::vector<Graph> prevTier;
+    std::set<HalfEdgeGraph> encounteredHalfEdges;
+    for (const Primitive* p : primitives) {
+        for (const HalfEdgeGraph& h : p->halfEdges) {
+            encounteredHalfEdges.insert(h);
+        }
+    }
+#if INCLUDE_SINGLE_EDGE
+    for (const HalfEdgeGraph& h : encounteredHalfEdges) {
+        Graph g = Graph(std::vector<HalfEdgeGraph>({ h, -h }));
+        g.isSingleEdge = true;
+        g.face_colors = faceColors;
+        // bool notYetAdded = true;
+        // for (const Graph& oldG : hierarchy) {
+        //     if (g.sameBoundaryString(oldG)) {
+        //         // or could use isomorphism, dunno which more efficient (just avoiding hitting both HE and its opposite)
+        //         notYetAdded = false;
+        //         break;
+        //     }
+        // }
+        // if (notYetAdded) {
+        //     hierarchy.push_back(g);
+        // }
+        if (!graphsByBoundary.contains(g.getBoundaryGeneric())) {
+            graphsByBoundary.insert({ g.getBoundaryGeneric(), g });
+        }
+    }
+#endif
+    for (const Primitive* p : primitives) {
+        // Graph g = Graph();
+        Graph g = Graph(p->halfEdges);
+        g.face_colors = faceColors;
+        // g.face_colors.push_back(glm::vec3(0,0,0));
+        // g.face_colors.push_back(glm::vec3(1,1,1));
+        // TODO I GUESS should pass face colors in too? just placeholder rn
+
+        // ignore redundant primitives
+        bool noMatches = true;
+        for (const Graph& existingGraph : tier1) {
+            if (g.isIsomorphicTo(existingGraph)) {
+                noMatches = false;
+                break;
+            }
+        }
+        if (noMatches) {
+            tier1.push_back(g);
+            graphsByBoundary.insert({ g.getBoundaryGeneric(), g });
+            prevTier.push_back(g);
+        }
+        // TODO realize also might need to make rules for primitive to single edge case once single-edge-no-vertex graphs added
+        //  NOTE IDK if primitives that are single edges should be occurring in input really but no reason not to make possible I suppose (collinear edge of face)
+        //  Actually IDK. maybe just leave those out entirely since not really benefical to graph structure.
+        //      not handling for now but TODO may add later; I don't think it's really beneficial though
+        // fo (const Graph& )
+
+        // tier1.push_back(g);
+        // tier1.push_back(std::move(g));
+        // tier1.insert(tier1.end(), g);
+    }
+    // hierarchy.push_back(tier1);
+    // hierarchy.insert(hierarchy.end(), tier1.begin(), tier1.end());
+
+    Graph emptyGraph{};
+    emptyGraph.face_colors = faceColors; // shouldn't matter but just for consistency doing this
+
+    std::vector<Graph> usedGraphs;
+
+#if outputProgress
+    QString fileName = QFileDialog::getSaveFileName(nullptr, "Save JSON File", "~/../../../../jsons", "JSON Files (*.json)");
+#endif
+
+    // TODO figure out end conditions
+    // std::vector<Graph> prevTier = tier1;
+    for (unsigned int i = 0; i < maxSteps; ++i) {
+        std::vector<Graph> newTier;
+        std::map<std::vector<std::vector<HalfEdgeGraph>>, Graph> newGraphsByBoundary{};
+
+        // TODO should add checks to avoid redundancy? general graph isomorphism test I guess should do
+        for (const Graph& g : prevTier) {
+            for (const Graph& gPrim : tier1) {
+                std::vector<Graph> branchGlued = g.branchGlue(gPrim);
+
+                for (Graph& newGraph : branchGlued) {
+                    // bool noMatches = true;
+                    // only need to compare current tier since earlier ones all have fewer primitives and hence can't be isomorphic to this
+                    // for (const Graph& existingGraph : newTier) {
+                    //     if (newGraph.sameBoundaryString(existingGraph) && newGraph.isIsomorphicTo(existingGraph)) {
+                    //         noMatches = false;
+                    //         break;
+                    //     }
+                    // }
+                    // if (noMatches) {
+                    //     newTier.push_back(newGraph);
+                    // }
+                    const auto& bound = newGraph.getBoundaryGeneric();
+                    // if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+                    // auto bound = newGraph.getBoundaryGeneric();
+                    if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+                        newTier.push_back(newGraph);
+                        // if (bound != newGraph.getBoundaryGeneric()) {
+                        //     std::cout << "AAA" << std::endl;
+                        // }
+                        newGraphsByBoundary.insert({ newGraph.getBoundaryGeneric(), (newTier.back()) });
+                    }
+                }
+                // newTier.insert(newTier.end(), branchGlued.begin(), branchGlued.end());
+            }
+            std::vector<Graph> loopGlued = g.loopGlue();
+            // TODO maybe should use some sort of std::move thing here? dunno best way to
+            // newTier.insert(newTier.end(), loopGlued.begin(), loopGlued.end());
+            for (Graph& newGraph : loopGlued) {
+                // bool noMatches = true;
+                // for (const Graph& existingGraph : newTier) {
+                //     if (newGraph.sameBoundaryString(existingGraph) && newGraph.isIsomorphicTo(existingGraph)) {
+                //         noMatches = false;
+                //         break;
+                //     }
+                // }
+                // if (noMatches) {
+                //     newTier.push_back(newGraph);
+                // }
+                const auto& bound = newGraph.getBoundaryGeneric();
+                // if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+                // auto bound = newGraph.getBoundaryGeneric();
+                if (!newGraphsByBoundary.contains(bound) || !newGraph.isIsomorphicTo(newGraphsByBoundary.at(bound))) {
+                    newTier.push_back(newGraph);
+
+                    newGraphsByBoundary.insert({ newGraph.getBoundaryGeneric(), (newTier.back()) });
+
+                }
+            }
+
+        }
+
+        // for ()
+        // I think going to make the whole tier first before checking for boundary equivalences in hierarchy? since then can make sure not to repeat multiple of same graph
+        prevTier = std::vector<Graph>();
+
+
+        std::vector<Graph> toAdd;
+        for (Graph& newGraph : newTier) {
+
+#if !THREE_DIMENSIONAL
+            float curTurn = 0;
+            bool skip = false;
+            // TODO this isn't really doing it right I think but curious if it works at all
+            for (unsigned int j = 0; j < newGraph.boundaryString.size() * 2; ++j) {
+                const Turn* t = std::get_if<Turn>(&newGraph.boundaryString.at((j) % newGraph.boundaryString.size()));
+                if (t == nullptr) {
+                    curTurn = 0;
+                }
+                else {
+                    if (*t == Turn::positive) {
+                        curTurn += 180;
+                    }
+                    else {
+                        curTurn -= 180;
+                    }
+                    if (abs(curTurn) > 360) {
+                        skip = true;
+                        break;
+                    }
+                }
+            }
+            if (skip) {
+                usedGraphs.push_back(newGraph);
+                continue;
+            }
+#endif
+
+            // TODO move check earlier so don't need to check ones that are descendants in the noMatches checks?
+            bool isUsedDescendant = false;
+            for (const Graph& otherGraph : usedGraphs) {
+                if (newGraph.hasSubgraph(otherGraph)) {
+                    isUsedDescendant = true;
+                    break;
+                }
+            }
+
+            if (!isUsedDescendant) {
+                if (newGraph.sameBoundaryString(emptyGraph)) {
+                    // if (newGraph.boundaryString.size() == 1) {
+                        // TODO I think don't need to actually check that the one symbol is positive turn? since should never be able to make a string without a positive turn in it I believe
+                        //   changed to a way that's clearer in use although will be less efficient, can change back if desired
+                        // complete graph
+                    result.push_back({ emptyGraph, newGraph });
+                    usedGraphs.push_back(newGraph);
+                    std::cout << "Added starter rule" << std::endl;
+                }
+                else {
+                    bool ruleAdded = false;
+                    // for (const Graph& otherGraph : hierarchy) {
+                    //     // TODO should make spliced version of this. I think should actually include support for both so can control whether produces connected graph
+                    //     if (newGraph.sameBoundaryString(otherGraph)) {
+                    //         result.push_back({otherGraph, newGraph});
+                    //         ruleAdded = true;
+                    //         break;
+                    //         // TODO uncertain if this is meant to always break here. I think should theoretically never hit more than one since all earlier ones after the first shouldn't be added to hierarchy
+                    //     }
+                    // }
+                    auto bound = newGraph.getBoundaryGeneric();
+                    if (graphsByBoundary.contains(bound)) {
+
+                        //  trying having a check here for if newGraph can generate positions w/ very loose constraints.
+                        //  if not, remove but don't make rule
+                        //  theoretically could check at every time a graph generated and would make hierarchy smaller but time consuming (though also time consuming having big hierarchy) and riskier since will probably over-remove cases (which this also will but fewer chances to fail)
+                        if (newGraph.isIsomorphicTo(graphsByBoundary.at(bound))) {
+
+                            // TODO find why this isn't being caught earlier
+                            // !!!!!!!!!!!
+
+
+                            // Graph g = graphsByBoundary.at(bound);
+                            // std::cout << newGraph.isIsomorphicTo(graphsByBoundary.at(bound)) << std::endl;
+                            std::cout << "Repeated element in tier " << i << std::endl;
+                        }
+                        else {
+                            double err;
+                            std::map<unsigned int, glm::vec3> emptyPositionMap;
+                            newGraph.samplePositions(emptyPositionMap, err, 1, 20, -10, 10, 10000, 0.5);
+                            if (err != -1) {
+                                result.push_back({ graphsByBoundary.at(bound),newGraph });
+                            }
+                        }
+                        ruleAdded = true;
+                    }
+                    // TODO figure out how to handle the special case of single-edged graph
+                    //  if (newGraph.boundaryString.size() == 3) {
+                    //      ...
+                    //  }
+                    if (ruleAdded) {
+
+                        // TODO should this also get rid of descendants of the otherGraph? I don't think so since can have multiple that make valid rules
+                        usedGraphs.push_back(std::move(newGraph));
+                    }
+                    else {
+                        // TODO these shouldn't copy probably, just reference, dunno how to avoid
+                        //  TODO maybe prevtier as vector of pointers? or all as vectors of pointers?
+                        prevTier.push_back(std::move(newGraph));
+                        graphsByBoundary.insert({ newGraph.getBoundaryGeneric(), (prevTier.back()) });
+
+                        // hierarchy.push_back(std::move(newGraph));
+                        // TODO is it better to not add to hierarchy until after? with hierarchy push here can have rules that go between two graphs at same level but I'm unclear if that's intended or not in the algorithm as laid out in the paper. seems to make smaller grammars at least
+                        // toAdd.push_back(std::move(newGraph));
+                    }
+                    // TODO check for guarantee of incomplete descendants and remove if so
+                    //  not technically required at this moment (since we have arbitrary cutoff rn) but long term good to have
+
+                    // TODO do we want to skip descendants of graphs already used as L of rules?
+                    //  should be easy: store list of graphs that weren't added to hierarchy separately, then when adding one check if it has any of those as a subgraph
+                    // TODO yeah want to do that. additional note:
+                    //      STEP that I BELIEVE is optional ("algorithm can finish without it" but can make grammar have fewer rules)
+                    //          when graph added to hierarchy, check if it can be used to simplify another graph
+                    //              only case where this should matter I THINK is "reducing a graph with its descendants"
+                    //          in that case, we want to remove all descendants besides the ones used to reduce it from the hierarchy
+                    //      hence in the case where we're not doing that I THINK the idea is we remove all of its decesndants from the hierarchy
+                    //      but not super explicitly specified in paper as far as I can tell
+                    //          but will try it
+                }
+            }
+        }
+        // for (Graph &g : toAdd) {
+        //     hierarchy.push_back(std::move(g));
+        // }
+
+        // hierarchy.push_back(newTier);
+#if outputProgress
+//progress saving for testing
+        std::vector<std::array<Graph*, 2>> gram;
+        for (auto& [first, second] : result) {
+            std::array<Graph*, 2> gArr{ &first,&second };
+            gram.push_back(gArr);
+        }
+        JSONReader::WriteGrammarToFile(fileName.chopped(5) + QString::number(i) + ".json", gram);
+#endif
+
+        // prevTier = newTier;
+
+    }
+
+    // TODO handle generation 0 special case
+
+    // TODO actual use of hierarchy to produce rules
+
+    // TODO really should try to add some culling of incomplete-descendant cases since hierarchy does grow fast when more than a few prmitive types
+
+    return result;
+#else
     std::vector<std::pair<Graph,Graph>> result;
 
     // std::vector<std::vector<Graph>> hierarchy;
@@ -2350,6 +2652,7 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
     // TODO really should try to add some culling of incomplete-descendant cases since hierarchy does grow fast when more than a few prmitive types
 
     return result;
+#endif 
 }
 
 // TODO seems in 3d case examples I've tried to generate a lot of rules which don't do anything useful

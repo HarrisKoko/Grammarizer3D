@@ -43,7 +43,7 @@ struct BoundaryHE {
 struct BoundaryElem {
     BoundaryHE he;
     BoundaryElem *next;
-    // std::map<glm::vec3, int> nextTurns; // ignoring for now TODO
+     //std::map<glm::vec3, int> nextTurns; // ignoring for now TODO
     BoundaryElem *prev; //?
     // Note maybe could simplify some parts of code if this stored indices instead of pointers? TODO potential way to speed up some steps
 
