@@ -43,7 +43,9 @@ struct BoundaryHE {
 struct BoundaryElem {
     BoundaryHE he;
     BoundaryElem *next;
-     //std::map<glm::vec3, int> nextTurns; // ignoring for now TODO
+    //std::map<glm::vec3, int> nextTurns; // ignoring for now TODO
+    //std::vector<std::pair<glm::vec3, int>> nextTurns;
+    std::map<int, int> nextTurns;
     BoundaryElem *prev; //?
     // Note maybe could simplify some parts of code if this stored indices instead of pointers? TODO potential way to speed up some steps
 
@@ -66,6 +68,7 @@ class Graph : public QListWidgetItem
 {
 private:
     static unsigned int lastID;
+    static std::vector<glm::vec3> allFaceNormals;
 public:
     Graph();
     unsigned int ID;
@@ -143,6 +146,9 @@ public:
 
     void sortBoundaryGraphElements();
 
+
+    //std::vector<std::vector<std::pair<HalfEdgeGraph, std::map<int, int>>>> boundaryGeneric;
+    //const std::vector<std::vector<std::pair<HalfEdgeGraph, std::map<int, int>>>>& getBoundaryGeneric() const;
 
     std::vector<std::vector<HalfEdgeGraph>> boundaryGeneric;
     const std::vector<std::vector<HalfEdgeGraph>>& getBoundaryGeneric() const;

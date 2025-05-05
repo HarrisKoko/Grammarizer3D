@@ -19,6 +19,7 @@
 
 
 unsigned int Graph::lastID{0};
+std::vector<glm::vec3> Graph::allFaceNormals{std::vector<glm::vec3>()};
 
 Graph::Graph() : ID(lastID++) {
 #if !THREE_DIMENSIONAL
@@ -42,6 +43,7 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
 : ID(lastID++)
 {
     setText(QString::number(ID));
+    Graph::allFaceNormals = std::vector<glm::vec3>();
 #if THREE_DIMENSIONAL
 
     std::vector<std::vector<std::tuple<unsigned int, int, int, glm::vec3, glm::vec3>>> adjacentVerts(vertexPositions.size());
@@ -171,8 +173,9 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
             glm::vec3 dir = glm::normalize(vertexPositions.at(std::get<0>(adjData)) - iPos);
 
             glm::vec3 forward = glm::vec3(0,1,0);
-            glm::vec3 normal;
-            if (std::get<3>(adjData).x == std::get<4>(adjData).x) {
+            glm::vec3 normal = std::get<3>(adjData);
+            glm::vec3 normal1 = std::get<4>(adjData);
+           /* if (std::get<3>(adjData).x == std::get<4>(adjData).x) {
                 if (std::get<3>(adjData).y == std::get<4>(adjData).y) {
                     if (std::get<3>(adjData).z == std::get<4>(adjData).z) {
                         normal = std::get<3>(adjData);
@@ -185,7 +188,7 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
                 }
             } else {
                 normal = (std::get<3>(adjData).x < std::get<4>(adjData).x) ? std::get<3>(adjData) : std::get<4>(adjData);
-            }
+            }*/
 
             glm::vec3 turnDirection = glm::cross(normal, forward);
             if (turnDirection != glm::vec3(0)) {
@@ -194,8 +197,6 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
                 glm::mat4 rotation = glm::rotate(turnAngle, turnDirection);
 
                 dir = glm::vec3(rotation * glm::vec4(dir, 1));
-            //} else if (glm::dot(normal, forward) < 0) {
-                // dir.x = -dir.x; // TODO not sure if that's totally right
             }
             float theta = (dir.z > 0) ? glm::acos(dir.x) : -glm::acos(dir.x);
 
@@ -204,9 +205,61 @@ Graph::Graph(std::vector<glm::vec3> vertexPositions, std::vector<std::pair<std::
                 theta -= 2 * M_PI;
             }
             theta = std::round(theta * 180.f) / 180.f;
+
+            glm::vec3 turnDirection1 = glm::cross(normal1, forward);
+            dir = glm::normalize(vertexPositions.at(std::get<0>(adjData)) - iPos);
+            if (turnDirection1 != glm::vec3(0)) {
+                float turnAngle = glm::acos(glm::dot(normal1, forward));
+
+                glm::mat4 rotation = glm::rotate(turnAngle, turnDirection1);
+
+                dir = glm::vec3(rotation * glm::vec4(dir, 1));
+            }
+            float theta1 = (dir.z > 0) ? glm::acos(dir.x) : -glm::acos(dir.x);
+
+            // rounding before so can use map method more reliably
+            if (theta1 > 3.141) {
+                theta1 -= 2 * M_PI;
+            }
+            theta1 = std::round(theta1 * 180.f) / 180.f;
             // ^TODO probably make dir.y and have this take in 2d vec? or generaliaze to something like vector for angle and leave in 3d
             // TODO maybe flip around which way is negative to match paper diagrams better (since -z is up on our display rn) but fine as is as long as consistent
-            p->halfEdges.push_back(HalfEdgeGraph(theta, {{std::get<1>(adjData), std::get<2>(adjData)}}, {{std::get<3>(adjData), std::get<4>(adjData)}}));
+
+            int faceIdx0 = -1;
+            int faceIdx1 = -1;
+
+
+            for (unsigned int i = 0; i < Graph::allFaceNormals.size(); ++i) {
+                if (Graph::allFaceNormals.at(i) == normal) {
+                    faceIdx0 = i;
+                    if (faceIdx1 != -1) {
+                        break;
+                    }
+                }
+                if (Graph::allFaceNormals.at(i) == normal1) {
+                    faceIdx1 = i;
+                    if (faceIdx0 != -1) {
+                        break;
+                    }
+                }
+            }
+            if (faceIdx0 == -1) {
+                if (glm::all(glm::epsilonEqual(normal, normal1, ANGLE_EPSILON))) {
+                    faceIdx0 = Graph::allFaceNormals.size();
+                    faceIdx1 = faceIdx0;
+                    Graph::allFaceNormals.push_back(normal);
+                }
+                else {
+                    faceIdx0 = Graph::allFaceNormals.size();
+                    Graph::allFaceNormals.push_back(normal);
+                }
+            }
+            if (faceIdx1 == -1) {
+                faceIdx1 = allFaceNormals.size();
+                allFaceNormals.push_back(normal1);
+            }
+
+            p->halfEdges.push_back(HalfEdgeGraph({ {theta, theta1} }, { {std::get<1>(adjData), std::get<2>(adjData)} }, { {faceIdx0, faceIdx1} }));
             p->connections.push_back(this->primitives.at(std::get<0>(adjData)).get());
 #else
 
@@ -378,6 +431,9 @@ Graph::Graph(const std::vector<HalfEdgeGraph>& primHEs)
     std::sort(prim->halfEdges.begin(), prim->halfEdges.end());
     // TODO not sure if I want to sort there or just use a sorted copy type of thing? I think fine to do here since already know no connections to mess up indices of.
     // note should sort based on the operation< defined in HalfEdgeGraph, so should be ascending angle (then ascending face labels just to make order well defined but not relevant since should never have two of same angle in same primitive)
+
+    std::set<int> encounteredFaces;
+
 #if THREE_DIMENSIONAL
 
     std::vector<uPtr<BoundaryElem>> yetToAdd;
@@ -392,13 +448,15 @@ Graph::Graph(const std::vector<HalfEdgeGraph>& primHEs)
         // elem->prev = nullptr;
 
         bool placed = false;
-        std::pair<int, glm::vec3> leftFace = {he.faces[0], he.faceNormals[0]};
-        std::pair<int, glm::vec3> rightFace = {he.faces[1], he.faceNormals[1]};
+        std::pair<int, int> leftFace = {he.faces[0], he.faceNormals[0]};
+        std::pair<int, int> rightFace = {he.faces[1], he.faceNormals[1]};
+        encounteredFaces.insert(he.faces[0]);
+        encounteredFaces.insert(he.faces[1]);
         for (unsigned int i = this->boundaryGraphElements.size(); i > 0; --i) {
             // for (unsigned int i = 0; i < this->boundaryGraphElements.size(); ++i) {
             const uPtr<BoundaryElem>& otherElem = this->boundaryGraphElements.at(i - 1);
-            std::pair<int, glm::vec3> otherLeftFace = {otherElem->he.h.faces[0], otherElem->he.h.faceNormals[0]};
-            std::pair<int, glm::vec3> otherRightFace = {otherElem->he.h.faces[1], otherElem->he.h.faceNormals[1]};
+            std::pair<int, int> otherLeftFace = {otherElem->he.h.faces[0], otherElem->he.h.faceNormals[0]};
+            std::pair<int, int> otherRightFace = {otherElem->he.h.faces[1], otherElem->he.h.faceNormals[1]};
             if (otherRightFace == leftFace) {
                 if (otherLeftFace == rightFace) {
                     // same face
@@ -438,13 +496,13 @@ Graph::Graph(const std::vector<HalfEdgeGraph>& primHEs)
         for (unsigned int j = 0; j < yetToAdd.size(); ++j) {
             uPtr<BoundaryElem>& elem = yetToAdd.at(j);
             // for (uPtr<BoundaryElem>& elem : yetToAdd) {
-            std::pair<int, glm::vec3> leftFace = {elem->he.h.faces[0], elem->he.h.faceNormals[0]};
-            std::pair<int, glm::vec3> rightFace = {elem->he.h.faces[1], elem->he.h.faceNormals[1]};
+            std::pair<int, int> leftFace = {elem->he.h.faces[0], elem->he.h.faceNormals[0]};
+            std::pair<int, int> rightFace = {elem->he.h.faces[1], elem->he.h.faceNormals[1]};
             for (unsigned int i = this->boundaryGraphElements.size(); i > 0; --i) {
                 // for (unsigned int i = 0; i < this->boundaryGraphElements.size(); ++i) {
                 const uPtr<BoundaryElem>& otherElem = this->boundaryGraphElements.at(i - 1);
-                std::pair<int, glm::vec3> otherLeftFace = {otherElem->he.h.faces[0], otherElem->he.h.faceNormals[0]};
-                std::pair<int, glm::vec3> otherRightFace = {otherElem->he.h.faces[1], otherElem->he.h.faceNormals[1]};
+                std::pair<int, int> otherLeftFace = {otherElem->he.h.faces[0], otherElem->he.h.faceNormals[0]};
+                std::pair<int, int> otherRightFace = {otherElem->he.h.faces[1], otherElem->he.h.faceNormals[1]};
                 if (otherRightFace == leftFace) {
                     if (otherLeftFace == rightFace) {
                         // same face
@@ -484,6 +542,28 @@ Graph::Graph(const std::vector<HalfEdgeGraph>& primHEs)
         this->boundaryGraphElements.at(i)->next = this->boundaryGraphElements.at((i + 1) % this->boundaryGraphElements.size()).get();
         this->boundaryGraphElements.at((i + 1) % this->boundaryGraphElements.size())->prev = this->boundaryGraphElements.at(i).get();
     }
+
+    std::map<int, std::pair<float, int>> maxVals;
+    for (unsigned int i = 0; i < this->boundaryGraphElements.size(); ++i) {
+
+        for (unsigned int j = 0; j <= 1; ++j) {
+            int face = this->boundaryGraphElements.at(i)->he.h.faces[j];
+            if (maxVals.contains(face)) {
+                float angle = this->boundaryGraphElements.at(i)->he.h.angle[j];
+                if (maxVals.at(face).first < angle) {
+                    maxVals.at(face) = { angle, i };
+                }
+            }
+            else {
+                maxVals.insert({ face, {this->boundaryGraphElements.at(i)->he.h.angle[j], i} });
+            }
+        }
+    }
+
+    for (const auto& [faceIdx, p] : maxVals) {
+        this->boundaryGraphElements.at(p.second)->nextTurns.insert({ faceIdx, 1 });
+    }
+
 
     this->sortBoundaryGraphElements();
 
@@ -1265,10 +1345,62 @@ std::vector<Graph> Graph::branchGlue(const Graph &other) const
                 if (oE == nullptr) {
                     continue;
                 }
+                //pseudocode:
+                // tE->prev->nextTurns += oE->nextTurns
+                //   - nonnegative angles' faces
+                // oE->prev->nextTurns += tE->nextTurns
+                //   - negative angles' faces
+
+                for (const auto& [faceIdx, count] : oE->nextTurns) {
+                    if (tE->prev->nextTurns.contains(faceIdx)) {
+                        tE->prev->nextTurns.at(faceIdx) += count;
+                    } 
+                    else {
+                        tE->prev->nextTurns.insert({ faceIdx, count });
+                    }
+                }
+                for (const auto& [faceIdx, count] : tE->nextTurns) {
+                    if (oE->prev->nextTurns.contains(faceIdx)) {
+                        oE->prev->nextTurns.at(faceIdx) += count;
+                    } 
+                    else {
+                        oE->prev->nextTurns.insert({ faceIdx, count });
+                    }
+                }
+
+                for (int i = 0; i <= 1; ++i) {
+                    if (thisElem->he.h.angle.at(i) < 0) {
+                        //negative angle, insert turn after
+                        int faceIdx = thisElem->he.h.faceNormals.at(i);
+                        if (oE->prev->nextTurns.contains(faceIdx)) {
+                            oE->prev->nextTurns.at(faceIdx) -= 1;
+                        }
+                        else {
+                            oE->prev->nextTurns.insert({ faceIdx, -1 });
+                        }
+                    }
+                    else {
+                        //nonnegative, insert angle before
+                        int faceIdx = thisElem->he.h.faceNormals.at(i);
+
+                        if (tE->prev->nextTurns.contains(faceIdx)) {
+                            tE->prev->nextTurns.at(faceIdx) -= 1;
+                        }
+                        else {
+                            tE->prev->nextTurns.insert({ faceIdx, -1 });
+                        }
+
+                    }
+                }
+                
+
+
                 tE->prev->next = oE->next;
                 oE->next->prev = tE->prev;
                 tE->next->prev = oE->prev;
                 oE->prev->next = tE->next;
+
+                
 
                 gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + oE_index);
                 gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + k);
@@ -1276,6 +1408,7 @@ std::vector<Graph> Graph::branchGlue(const Graph &other) const
 
                 gluedGraph.primitives.push_back(std::move(newPrim));
                 gluedGraph.sortBoundaryGraphElements();
+                gluedGraph.cancelTurns();
 
                 results.push_back(std::move(gluedGraph));
             }
@@ -1412,6 +1545,24 @@ std::vector<Graph> Graph::loopGlue() const
                     BoundaryElem* tE = gluedGraph.boundaryGraphElements.at(i).get();
                     BoundaryElem* oE = gluedGraph.boundaryGraphElements.at(j).get();
 
+                    for (const auto& [faceIdx, count] : oE->nextTurns) {
+                        if (tE->prev->nextTurns.contains(faceIdx)) {
+                            tE->prev->nextTurns.at(faceIdx) += count;
+                        }
+                        else {
+                            tE->prev->nextTurns.insert({ faceIdx, count });
+                        }
+                    }
+                    for (const auto& [faceIdx, count] : tE->nextTurns) {
+                        if (oE->prev->nextTurns.contains(faceIdx)) {
+                            oE->prev->nextTurns.at(faceIdx) += count;
+                        }
+                        else {
+                            oE->prev->nextTurns.insert({ faceIdx, count });
+                        }
+                    }
+                    // TODO do I actually NEED to check for edge turn thing first before doing loop gluing? just doing overpermissive for now
+
                     tE->prev->next = oE->next;
                     oE->next->prev = tE->prev;
                     tE->next->prev = oE->prev;
@@ -1436,6 +1587,8 @@ std::vector<Graph> Graph::loopGlue() const
                     gluedGraph.boundaryGraphElements.erase(gluedGraph.boundaryGraphElements.begin() + j);
 
                     gluedGraph.sortBoundaryGraphElements();
+                    gluedGraph.cancelTurns();
+
 
                     results.push_back(std::move(gluedGraph));
 
@@ -1555,6 +1708,62 @@ std::vector<Graph> Graph::loopGlue() const
 
 void Graph::cancelTurns()
 {
+
+#if THREE_DIMENSIONAL
+    if (boundaryGraphElements.size() == 0) {
+        return;
+    }
+    std::map<int, int> curTurns;
+    std::map<int, BoundaryElem*> turnSpots;
+    
+    // I THINK technically should only count turns in same continuous plane? like if encounters another group which has same normals should skip unless directly connected. but not sure
+    //  not doing at the moment
+    for (unsigned int i = 0; i < boundaryGraphElements.size(); ++i) {
+        //const uPtr<BoundaryElem>& ePtr = this->boundaryGraphElements.at(i);
+        BoundaryElem* start = this->boundaryGraphElements.at(i).get();
+        BoundaryElem* curPtr = start;
+        std::vector<std::pair<BoundaryElem*, int>> toErase;
+        do {
+            for (int j = 0; j <= 1; ++j) {
+                if (curTurns.contains(curPtr->he.h.faceNormals.at(j))) {
+                    curTurns.erase(curPtr->he.h.faceNormals.at(j));
+                    turnSpots.erase(curPtr->he.h.faceNormals.at(j));
+                }
+            }
+            bool stop = false;
+            for (const auto& [faceIdx, count] : curPtr->nextTurns) { // crash
+                if (curTurns.contains(faceIdx)) {
+                    if (turnSpots.at(faceIdx) == curPtr) {
+                        stop = true;
+                        break;
+                    }
+                    curPtr->nextTurns.at(faceIdx) += curTurns.at(faceIdx); //
+                    turnSpots.at(faceIdx)->nextTurns.erase(faceIdx);
+                    if (curPtr->nextTurns.at(faceIdx) == 0) {
+                        toErase.push_back({ curPtr, faceIdx });
+                        curTurns.erase(faceIdx);
+                        turnSpots.erase(faceIdx);
+                    }
+                    else {
+                        curTurns.at(faceIdx) = curPtr->nextTurns.at(faceIdx);
+                        turnSpots.at(faceIdx) = curPtr;
+                    }
+                }
+                else {
+                    curTurns.insert({ faceIdx, count });
+                    turnSpots.insert({ faceIdx, curPtr} );
+                }
+            }
+            if (stop) { 
+                break; 
+            }
+            curPtr = curPtr->next;
+        } while (curPtr != start);
+        for (unsigned int i = 0; i < toErase.size(); ++i) {
+            toErase.at(i).first->nextTurns.erase(toErase.at(i).second);
+        }
+    }
+#else
     if (boundaryString.size() < 2) {
         return;
     }
@@ -1574,6 +1783,7 @@ void Graph::cancelTurns()
             --i;
         }
     }
+#endif
 }
 
 bool Graph::hasSubgraph(const Graph &other) const
@@ -2119,6 +2329,20 @@ std::vector<std::pair<Graph, Graph>> Graph::generateRules(const std::vector<Prim
             }
             if (skip) {
                 usedGraphs.push_back(newGraph);
+                continue;
+            }
+#else
+
+            bool skip = false;
+            for (const uPtr<BoundaryElem>& ptr : newGraph.boundaryGraphElements) {
+                for (const auto& [faceIdx, count] : ptr->nextTurns) {
+                    if (abs(count) > 2) {
+                        break;
+                    }
+                }
+            }
+            if (skip) {
+                usedGraphs.push_back(std::move(newGraph));
                 continue;
             }
 #endif
@@ -2964,16 +3188,17 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
         // TODO try: add just edges that have non-null connections and angle in upper half of values (>= 0)
         //  others are redundant
         for (unsigned int i = 0; i < prim->connections.size(); ++i) {
-            if (prim->connections.at(i) != nullptr && prim->halfEdges.at(i).angle >= 0) {
+            if (prim->connections.at(i) != nullptr && prim->halfEdges.at(i).angle[0] >= 0) {
                 unsigned int otherIndex = allPrimIndices.at(prim->connections.at(i));
 
-                glm::vec3 direction(cos(prim->halfEdges.at(i).angle), 0.0f, sin(prim->halfEdges.at(i).angle));
+                glm::vec3 direction(cos(prim->halfEdges.at(i).angle[0]), 0.0f, sin(prim->halfEdges.at(i).angle[0]));
 
 #if THREE_DIMENSIONAL
                 glm::vec3 forward = glm::vec3(0,1,0);
                 glm::vec3 normal;
                 auto& norms = prim->halfEdges.at(i).faceNormals;
-                if (norms.at(0).x == norms.at(1).x) {
+                normal = allFaceNormals.at(norms.at(0));
+               /* if (norms.at(0).x == norms.at(1).x) {
                     if (norms.at(0).y == norms.at(1).y) {
                         if (norms.at(0).z == norms.at(1).z) {
                             normal = norms.at(0);
@@ -2986,7 +3211,7 @@ std::vector<glm::vec3> Graph::samplePositions(const std::map<unsigned int, glm::
                     }
                 } else {
                     normal = (norms.at(0).x < norms.at(1).x) ? norms.at(0) : norms.at(1);
-                }
+                }*/
 
                 glm::vec3 turnDirection = glm::cross(normal, forward);
                 if (turnDirection != glm::vec3(0)) {

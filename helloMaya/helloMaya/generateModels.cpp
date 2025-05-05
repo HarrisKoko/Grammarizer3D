@@ -153,7 +153,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
         Primitive* startP = graph.primitives.at(i).get();
         for (unsigned int j = 0; j < startP->halfEdges.size(); ++j) {
             HalfEdgeGraph curHE = startP->halfEdges.at(j);
-            if (curHE.angle < 0.f) {
+            if (curHE.angle.at(0) < 0.f) {
                 if (explored.contains({ startP, curHE })) {
                     continue;
                 }
@@ -183,7 +183,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
                             //awkward and probably some way to simplify but just doing:
                             // convert angle back to direction
                             // convert to angle within plane with face normal (0) (rather than normal with lowest valued xyz)
-                            glm::vec3 direction(cos(nextP->halfEdges.at(k).angle), 0.0f, sin(nextP->halfEdges.at(k).angle));
+                            /*glm::vec3 direction(cos(nextP->halfEdges.at(k).angle), 0.0f, sin(nextP->halfEdges.at(k).angle));
                             glm::vec3 forward = glm::vec3(0, 1, 0);
                             glm::vec3 normal;
                             auto& norms = nextP->halfEdges.at(k).faceNormals;
@@ -225,8 +225,9 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
 
                                 direction = glm::vec3(rotation * glm::vec4(direction, 1));
                             }
-                            float theta = (direction.z > 0) ? glm::acos(direction.x) : -glm::acos(direction.x);
+                            float theta = (direction.z > 0) ? glm::acos(direction.x) : -glm::acos(direction.x);*/
 
+                            float theta = nextP->halfEdges.at(k).angle.at(0);
 
                             potentialNext.insert({ theta, k });
                         }
@@ -237,7 +238,7 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
 
                     float invAngle;
                     {
-                        glm::vec3 direction(cos(curHE.angle), 0.0f, sin(curHE.angle));
+                     /*   glm::vec3 direction(cos(curHE.angle), 0.0f, sin(curHE.angle));
                         glm::vec3 forward = glm::vec3(0, 1, 0);
                         glm::vec3 normal;
                         auto& norms = curHE.faceNormals;
@@ -279,8 +280,9 @@ MStatus GenerateModelsCmd::doIt(const MArgList& args) {
 
                             direction = glm::vec3(rotation * glm::vec4(direction, 1));
                         }
-                        float theta = (direction.z > 0) ? glm::acos(direction.x) : -glm::acos(direction.x);
+                        float theta = (direction.z > 0) ? glm::acos(direction.x) : -glm::acos(direction.x);*/
 
+                        float theta = curHE.angle.at(0);
                         if (theta < 0) {
                             invAngle = theta + M_PI;
                         }

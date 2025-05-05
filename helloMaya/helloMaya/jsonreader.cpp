@@ -55,94 +55,94 @@ bool JSONReader::LoadGeometryFromFile(const QString &local_path,
 
 void JSONReader::jsonToGraph(Graph* result, QJsonObject json)
 {
-    QJsonArray prims = json["primitives"].toArray();
-
-    for (const QJsonValue& p : prims) {
-        uPtr<Primitive> pPtr = mkU<Primitive>();
-        QJsonObject pObj = p.toObject();
-        QJsonArray hes = pObj["halfEdges"].toArray();
-        for (const QJsonValue& he : hes) {
-            QJsonObject heObj = he.toObject();
-            HalfEdgeGraph heResult;
-            heResult.angle = heObj["angle"].toDouble();
-            QJsonArray heFaces = heObj["faces"].toArray();
-            heResult.faces[0] = heFaces.at(0).toInt();
-            heResult.faces[1] = heFaces.at(1).toInt();
-            QJsonArray heNorms = heObj["faceNormals"].toArray();
-            heResult.faceNormals[0][0] = heNorms.at(0).toDouble();
-            heResult.faceNormals[0][1] = heNorms.at(1).toDouble();
-            heResult.faceNormals[0][2] = heNorms.at(2).toDouble();
-            heResult.faceNormals[1][0] = heNorms.at(3).toDouble();
-            heResult.faceNormals[1][1] = heNorms.at(4).toDouble();
-            heResult.faceNormals[1][2] = heNorms.at(5).toDouble();
-            pPtr->halfEdges.push_back(heResult);
-        }
-        result->primitives.push_back(std::move(pPtr));
-    }
-
-    for (unsigned int i = 0; i < prims.size(); ++i) {
-        QJsonObject pObj = prims.at(i).toObject();
-        Primitive* pPtr = result->primitives.at(i).get();
-
-        QJsonArray connectionIndices = pObj["connections"].toArray();
-        for (const QJsonValue& ci : connectionIndices) {
-            int val = ci.toInt();
-            if (val < 0) {
-                pPtr->connections.push_back(nullptr);
-            } else {
-                pPtr->connections.push_back(result->primitives.at(val).get());
-            }
-        }
-    }
-
-#if THREE_DIMENSIONAL
-    QJsonArray boundary = json["boundaryGraphElements"].toArray();
-    for (unsigned int i = 0; i < boundary.size(); ++i) {
-        result->boundaryGraphElements.push_back(mkU<BoundaryElem>());
-    }
-    for (unsigned int i = 0; i < boundary.size(); ++i) {
-        QJsonObject bElemObj = boundary.at(i).toObject();
-        QJsonObject bHEObj = bElemObj["he"].toObject();
-        QJsonObject heObj = bHEObj["h"].toObject();
-        uPtr<BoundaryElem>& elem = result->boundaryGraphElements.at(i);
-        elem->next = result->boundaryGraphElements.at(bElemObj["next"].toInt()).get();
-        elem->prev = result->boundaryGraphElements.at(bElemObj["prev"].toInt()).get();
-        elem->he.primIndex = bHEObj["primIndex"].toInt();
-
-        QJsonArray heFaces = heObj["faces"].toArray();
-        QJsonArray norms = heObj["faceNormals"].toArray();
-        elem->he.h.angle = heObj["angle"].toDouble();
-        elem->he.h.faces[0] = heFaces[0].toInt();
-        elem->he.h.faces[1] = heFaces[1].toInt();
-
-        elem->he.h.faceNormals[0] = glm::vec3(norms[0].toDouble(), norms[1].toDouble(), norms[2].toDouble());
-        elem->he.h.faceNormals[1] = glm::vec3(norms[3].toDouble(), norms[4].toDouble(), norms[5].toDouble());
-    }
-#else
-    QJsonArray boundary = json["boundaryString"].toArray();
-    for (const QJsonValue& elem : boundary) {
-        QJsonObject elemObj = elem.toObject();
-        QString elemType = elemObj["type"].toString();
-        if (elemType == "turn") {
-            Turn val = Turn(elemObj["value"].toInt());
-            result->boundaryString.push_back(val);
-            // TODO check that works
-        } else if (elemType == "halfEdge") {
-            QJsonObject heObj = elemObj["h"].toObject();
-            BoundaryHE b;
-            b.primIndex = elemObj["primIndex"].toInt();
-            QJsonArray heFaces = heObj["faces"].toArray();
-            b.h.angle = heObj["angle"].toDouble();
-            b.h.faces[0] = heFaces[0].toInt();
-            b.h.faces[1] = heFaces[1].toInt();
-            result->boundaryString.push_back(b);
-        } else {
-            // invalid TODO dunno how/if wanna handle
-        }
-    }
-#endif
-
-    result->isSingleEdge = json["isSingleEdge"].toBool(false);
+//    QJsonArray prims = json["primitives"].toArray();
+//
+//    for (const QJsonValue& p : prims) {
+//        uPtr<Primitive> pPtr = mkU<Primitive>();
+//        QJsonObject pObj = p.toObject();
+//        QJsonArray hes = pObj["halfEdges"].toArray();
+//        for (const QJsonValue& he : hes) {
+//            QJsonObject heObj = he.toObject();
+//            HalfEdgeGraph heResult;
+//            heResult.angle = heObj["angle"].toDouble();
+//            QJsonArray heFaces = heObj["faces"].toArray();
+//            heResult.faces[0] = heFaces.at(0).toInt();
+//            heResult.faces[1] = heFaces.at(1).toInt();
+//            QJsonArray heNorms = heObj["faceNormals"].toArray();
+//            heResult.faceNormals[0][0] = heNorms.at(0).toDouble();
+//            heResult.faceNormals[0][1] = heNorms.at(1).toDouble();
+//            heResult.faceNormals[0][2] = heNorms.at(2).toDouble();
+//            heResult.faceNormals[1][0] = heNorms.at(3).toDouble();
+//            heResult.faceNormals[1][1] = heNorms.at(4).toDouble();
+//            heResult.faceNormals[1][2] = heNorms.at(5).toDouble();
+//            pPtr->halfEdges.push_back(heResult);
+//     /*   }
+//        result->primitives.push_back(std::move(pPtr));
+//    }*/
+//
+//    for (unsigned int i = 0; i < prims.size(); ++i) {
+//        QJsonObject pObj = prims.at(i).toObject();
+//        Primitive* pPtr = result->primitives.at(i).get();
+//
+//        QJsonArray connectionIndices = pObj["connections"].toArray();
+//        for (const QJsonValue& ci : connectionIndices) {
+//            int val = ci.toInt();
+//            if (val < 0) {
+//                pPtr->connections.push_back(nullptr);
+//            } else {
+//                pPtr->connections.push_back(result->primitives.at(val).get());
+//            }
+//        }
+//    }
+//
+//#if THREE_DIMENSIONAL
+//    QJsonArray boundary = json["boundaryGraphElements"].toArray();
+//    for (unsigned int i = 0; i < boundary.size(); ++i) {
+//        result->boundaryGraphElements.push_back(mkU<BoundaryElem>());
+//    }
+//    for (unsigned int i = 0; i < boundary.size(); ++i) {
+//        QJsonObject bElemObj = boundary.at(i).toObject();
+//        QJsonObject bHEObj = bElemObj["he"].toObject();
+//        QJsonObject heObj = bHEObj["h"].toObject();
+//        uPtr<BoundaryElem>& elem = result->boundaryGraphElements.at(i);
+//        elem->next = result->boundaryGraphElements.at(bElemObj["next"].toInt()).get();
+//        elem->prev = result->boundaryGraphElements.at(bElemObj["prev"].toInt()).get();
+//        elem->he.primIndex = bHEObj["primIndex"].toInt();
+//
+//        QJsonArray heFaces = heObj["faces"].toArray();
+//        QJsonArray norms = heObj["faceNormals"].toArray();
+//        elem->he.h.angle = heObj["angle"].toDouble();
+//        elem->he.h.faces[0] = heFaces[0].toInt();
+//        elem->he.h.faces[1] = heFaces[1].toInt();
+//
+//        elem->he.h.faceNormals[0] = glm::vec3(norms[0].toDouble(), norms[1].toDouble(), norms[2].toDouble());
+//        elem->he.h.faceNormals[1] = glm::vec3(norms[3].toDouble(), norms[4].toDouble(), norms[5].toDouble());
+//    }
+//#else
+//    QJsonArray boundary = json["boundaryString"].toArray();
+//    for (const QJsonValue& elem : boundary) {
+//        QJsonObject elemObj = elem.toObject();
+//        QString elemType = elemObj["type"].toString();
+//        if (elemType == "turn") {
+//            Turn val = Turn(elemObj["value"].toInt());
+//            result->boundaryString.push_back(val);
+//            // TODO check that works
+//        } else if (elemType == "halfEdge") {
+//            QJsonObject heObj = elemObj["h"].toObject();
+//            BoundaryHE b;
+//            b.primIndex = elemObj["primIndex"].toInt();
+//            QJsonArray heFaces = heObj["faces"].toArray();
+//            b.h.angle = heObj["angle"].toDouble();
+//            b.h.faces[0] = heFaces[0].toInt();
+//            b.h.faces[1] = heFaces[1].toInt();
+//            result->boundaryString.push_back(b);
+//        } else {
+//            // invalid TODO dunno how/if wanna handle
+//        }
+//    }
+//#endif
+//
+//    result->isSingleEdge = json["isSingleEdge"].toBool(false);
 }
 
 Graph JSONReader::LoadGraphFromFile(const QString &local_path)
@@ -165,87 +165,87 @@ Graph JSONReader::LoadGraphFromFile(const QString &local_path)
 //      done;   done (but not this part yet);   done for random case but not done for eigen version
 bool JSONReader::graphToJSON(QJsonObject* json, const Graph* graph) {
     QJsonArray prims;
-    for (unsigned int i = 0; i < graph->primitives.size(); ++i) {
-
-        QJsonArray halfEdgesArr;
-        QJsonArray connectionsArr;
-        // TODO need to store connections as integer indices I think cuz can't do pointers per se in JSON. not sure if there's a more efficient way to do but I think just iterate over all the prims every time and check which it equals?
-        //  not sure if should first make a separate vector of raw pointers or just use .get every time? I think in C++23 on latter would be better (since constexpr anyway)? efficiency doesn't really matter I guess though
-        Primitive* curPrim = graph->primitives.at(i).get();
-        for (const HalfEdgeGraph &curHalfEdge : curPrim->halfEdges) {
-            QJsonObject heObj({ {"angle", curHalfEdge.angle},
-                                {"faces", QJsonArray{curHalfEdge.faces[0], curHalfEdge.faces[1]}},
-                                {"faceNormals", QJsonArray{curHalfEdge.faceNormals[0][0], curHalfEdge.faceNormals[0][1], curHalfEdge.faceNormals[0][2],
-                                                           curHalfEdge.faceNormals[1][0], curHalfEdge.faceNormals[1][1], curHalfEdge.faceNormals[1][2]}}});
-            halfEdgesArr.push_back(heObj);
-        }
-        for (const Primitive* connect : curPrim->connections) {
-            if (connect == nullptr) {
-                connectionsArr.push_back(-1);
-            } else {
-                bool added = false;
-                for (unsigned int j = 0; j < graph->primitives.size(); ++j) {
-                    if (connect == graph->primitives.at(j).get()) {
-                        connectionsArr.push_back(QJsonValue(int(j)));
-                        added = true;
-                        break;
-                    }
-                }
-                if (!added) {
-                    return false; // failure to construct JSON so returning false
-                }
-            }
-        }
-        QJsonObject primObj({{"halfEdges", halfEdgesArr}, {"connections", connectionsArr}});
-        prims.push_back(primObj);
-    }
-    json->insert("primitives", prims);
-
-
-    QJsonArray boundary;
-#if THREE_DIMENSIONAL
-    std::map<BoundaryElem*,unsigned int> elemIndex;
-    for (unsigned int i = 0; i < graph->boundaryGraphElements.size(); ++i) {
-        BoundaryElem* elem = graph->boundaryGraphElements.at(i).get();
-        elemIndex.insert({elem, i});
-    }
-    for (unsigned int i = 0; i < graph->boundaryGraphElements.size(); ++i) {
-        BoundaryElem* elem = graph->boundaryGraphElements.at(i).get();
-        BoundaryHE he = elem->he;
-        QJsonObject heObj({{"angle", he.h.angle}, {"faces", QJsonArray{he.h.faces[0], he.h.faces[1]}},
-                           {"faceNormals", QJsonArray{he.h.faceNormals[0][0], he.h.faceNormals[0][1], he.h.faceNormals[0][2],
-                                                      he.h.faceNormals[1][0], he.h.faceNormals[1][1], he.h.faceNormals[1][2]}}});
-        QJsonObject bHEObj({{"h", heObj}, {"primIndex", int(he.primIndex)}});
-
-        QJsonObject bElemObj({{"he", bHEObj},
-                              {"next", (int)elemIndex.at(elem->next)},
-                              {"prev", (int)elemIndex.at(elem->prev)}});
-
-        boundary.push_back(bElemObj);
-    }
-    json->insert("boundaryGraphElements", boundary);
-    // TODO should this store boundaryGeneric? I guess not used outside of when the algorithm is running so not really necessary
-#else
-    for (unsigned int i = 0; i < graph->boundaryString.size(); ++i) {
-        std::variant<BoundaryHE, Turn> elem = graph->boundaryString.at(i);
-        Turn* t = std::get_if<Turn>(&elem);
-        if (t != nullptr) {
-            // Turn
-            QJsonObject turnObj({{"type", "turn"}, {"value", *t}});
-            boundary.push_back(turnObj);
-        } else {
-            // Half edge
-            BoundaryHE* he = std::get_if<BoundaryHE>(&elem);
-            if (he == nullptr) {
-                return false; // invalid boundary string
-            }
-            QJsonObject heObj({{"angle", he->h.angle}, {"faces", QJsonArray{he->h.faces[0], he->h.faces[1]}}});
-            QJsonObject elemObj({{"type", "halfEdge"}, {"h", heObj}, {"primIndex", int(he->primIndex)}});
-            boundary.push_back(elemObj);
-        }
-    }
-    json->insert("boundaryString", boundary);
-#endif
+//    for (unsigned int i = 0; i < graph->primitives.size(); ++i) {
+//
+//        QJsonArray halfEdgesArr;
+//        QJsonArray connectionsArr;
+//        // TODO need to store connections as integer indices I think cuz can't do pointers per se in JSON. not sure if there's a more efficient way to do but I think just iterate over all the prims every time and check which it equals?
+//        //  not sure if should first make a separate vector of raw pointers or just use .get every time? I think in C++23 on latter would be better (since constexpr anyway)? efficiency doesn't really matter I guess though
+//        Primitive* curPrim = graph->primitives.at(i).get();
+//        for (const HalfEdgeGraph &curHalfEdge : curPrim->halfEdges) {
+//            QJsonObject heObj({ {"angle", curHalfEdge.angle},
+//                                {"faces", QJsonArray{curHalfEdge.faces[0], curHalfEdge.faces[1]}},
+//                                {"faceNormals", QJsonArray{curHalfEdge.faceNormals[0][0], curHalfEdge.faceNormals[0][1], curHalfEdge.faceNormals[0][2],
+//                                                           curHalfEdge.faceNormals[1][0], curHalfEdge.faceNormals[1][1], curHalfEdge.faceNormals[1][2]}}});
+//            halfEdgesArr.push_back(heObj);
+//        }
+//        for (const Primitive* connect : curPrim->connections) {
+//            if (connect == nullptr) {
+//                connectionsArr.push_back(-1);
+//            } else {
+//                bool added = false;
+//                for (unsigned int j = 0; j < graph->primitives.size(); ++j) {
+//                    if (connect == graph->primitives.at(j).get()) {
+//                        connectionsArr.push_back(QJsonValue(int(j)));
+//                        added = true;
+//                        break;
+//                    }
+//                }
+//                if (!added) {
+//                    return false; // failure to construct JSON so returning false
+//                }
+//            }
+//        }
+//        QJsonObject primObj({{"halfEdges", halfEdgesArr}, {"connections", connectionsArr}});
+//        prims.push_back(primObj);
+//    }
+//    json->insert("primitives", prims);
+//
+//
+//    QJsonArray boundary;
+//#if THREE_DIMENSIONAL
+//    std::map<BoundaryElem*,unsigned int> elemIndex;
+//    for (unsigned int i = 0; i < graph->boundaryGraphElements.size(); ++i) {
+//        BoundaryElem* elem = graph->boundaryGraphElements.at(i).get();
+//        elemIndex.insert({elem, i});
+//    }
+//    for (unsigned int i = 0; i < graph->boundaryGraphElements.size(); ++i) {
+//        BoundaryElem* elem = graph->boundaryGraphElements.at(i).get();
+//        BoundaryHE he = elem->he;
+//        QJsonObject heObj({{"angle", he.h.angle}, {"faces", QJsonArray{he.h.faces[0], he.h.faces[1]}},
+//                           {"faceNormals", QJsonArray{he.h.faceNormals[0][0], he.h.faceNormals[0][1], he.h.faceNormals[0][2],
+//                                                      he.h.faceNormals[1][0], he.h.faceNormals[1][1], he.h.faceNormals[1][2]}}});
+//        QJsonObject bHEObj({{"h", heObj}, {"primIndex", int(he.primIndex)}});
+//
+//        QJsonObject bElemObj({{"he", bHEObj},
+//                              {"next", (int)elemIndex.at(elem->next)},
+//                              {"prev", (int)elemIndex.at(elem->prev)}});
+//
+//        boundary.push_back(bElemObj);
+//    }
+//    json->insert("boundaryGraphElements", boundary);
+//    // TODO should this store boundaryGeneric? I guess not used outside of when the algorithm is running so not really necessary
+//#else
+//    for (unsigned int i = 0; i < graph->boundaryString.size(); ++i) {
+//        std::variant<BoundaryHE, Turn> elem = graph->boundaryString.at(i);
+//        Turn* t = std::get_if<Turn>(&elem);
+//        if (t != nullptr) {
+//            // Turn
+//            QJsonObject turnObj({{"type", "turn"}, {"value", *t}});
+//            boundary.push_back(turnObj);
+//        } else {
+//            // Half edge
+//            BoundaryHE* he = std::get_if<BoundaryHE>(&elem);
+//            if (he == nullptr) {
+//                return false; // invalid boundary string
+//            }
+//            QJsonObject heObj({{"angle", he->h.angle}, {"faces", QJsonArray{he->h.faces[0], he->h.faces[1]}}});
+//            QJsonObject elemObj({{"type", "halfEdge"}, {"h", heObj}, {"primIndex", int(he->primIndex)}});
+//            boundary.push_back(elemObj);
+//        }
+//    }
+//    json->insert("boundaryString", boundary);
+//#endif
 
     json->insert("isSingleEdge", graph->isSingleEdge);
     return true;
